@@ -9,9 +9,15 @@
 
 import { Game } from './components/etherworld'
 import { HUD } from './components/HUD'
+import CityIntro from './components/intro/CityIntro'
+import IntroCinematicOverlay from './components/intro/CinematicOverlay'
+import EtherworldDashboard from './components/dashboard/EtherworldDashboard'
+import { loadCharacterProfile, type EtherworldCharacterProfile } from './components/dashboard/characterProfile'
 import RayMarchingKinect from './components/kinect/RayMarchingKinect'
 import AdminConsole from './admin/AdminConsole'
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useStore } from '@/lib/etherworld/game-store'
+import AuthContext from './context/AuthContext'
+import { useState, useEffect, useRef, useCallback, useContext } from 'react'
 import { loadSave, deleteSave, type SaveData } from './hooks/useSaveSystem'
 import { getActiveJob, getState, subscribe, type ActiveJob } from './store/gameState'
 import type { DoorZone } from './data/quebecBuildings'
@@ -20,15 +26,37 @@ import type { DoorZone } from './data/quebecBuildings'
 type Phase = 'menu' | 'game' | 'kinect'
 type AdminTool = 'editor' | 'agent' | 'weather' | 'stats' | null
 
+const OWNER_EMAILS = (import.meta.env.VITE_OWNER_EMAILS ?? 'pepiteqc@gmail.com,owner@etherworld.local')
+  .split(',')
+  .map((email: string) => email.trim().toLowerCase())
+  .filter(Boolean)
+
 // Save chargée UNE SEULE FOIS au module load (synchrone garanti)
 const INITIAL_SAVE = loadSave()
 // ─────────────────────────────────────────────
 
 export default function App() {
+  const auth = useContext(AuthContext)
+  const playerProfile = useStore(s => s.playerProfile)
+  const ownerId = auth.user?.uid ?? playerProfile?.id ?? 'local-player'
+  const ownerEmail = auth.user?.email?.toLowerCase() ?? ''
+  const isOwner = Boolean(
+    auth.isAdmin ||
+    playerProfile?.isAdmin ||
+    playerProfile?.isModerator ||
+    auth.user?.role === 'owner' ||
+    auth.user?.role === 'admin' ||
+    OWNER_EMAILS.includes(ownerEmail) ||
+    (typeof localStorage !== 'undefined' && localStorage.getItem('etherzrp-owner') === 'true')
+  )
 
   // ── UI State ──────────────────────────────────
   const [phase,          setPhase]          = useState<Phase>('menu')
   const [fade,           setFade]           = useState(false)
+  const [siteIntroDone,  setSiteIntroDone]  = useState(() => {
+    try { return sessionStorage.getItem('etherzrp-city-intro-seen') === '1' }
+    catch { return false }
+  })
   const [adminOpen,      setAdminOpen]      = useState(false)
   const [adminTool,      setAdminTool]      = useState<AdminTool>(null)
 
@@ -47,10 +75,15 @@ export default function App() {
   // ── Save State ────────────────────────────────
   const [activeSave,     setActiveSave]     = useState<SaveData | null>(null)
   const [isNewPlayer,    setIsNewPlayer]    = useState(false)
+  const [characterProfile, setCharacterProfile] = useState<EtherworldCharacterProfile | null>(() => loadCharacterProfile(ownerId))
   const savedGame = INITIAL_SAVE
 
   // ── Refs ──────────────────────────────────────
   const prevMoneyRef = useRef(money)
+
+  useEffect(() => {
+    setCharacterProfile(loadCharacterProfile(ownerId))
+  }, [ownerId])
 
   // ============================================================
   //  STORE SYNC
@@ -192,6 +225,11 @@ export default function App() {
     setAdminTool(null)
   }, [])
 
+  const handleSiteIntroDone = useCallback(() => {
+    try { sessionStorage.setItem('etherzrp-city-intro-seen', '1') } catch {}
+    setSiteIntroDone(true)
+  }, [])
+
   // ============================================================
   //  RENDER
   // ============================================================
@@ -203,6 +241,8 @@ export default function App() {
       overflow: 'hidden',
       position: 'relative',
     }}>
+
+      {!siteIntroDone && <CityIntro onDone={handleSiteIntroDone} />}
 
       {/* ── Fondu de transition ── */}
       <div style={{
@@ -219,10 +259,17 @@ export default function App() {
           MENU
           ════════════════════════════════════ */}
       {phase === 'menu' && (
-        <MenuScreen
+        <EtherworldDashboard
           savedGame={savedGame}
-          onStart={handleStart}
-          onDeleteSave={handleDeleteSave}
+          ownerId={ownerId}
+          hasCharacter={Boolean(characterProfile)}
+          isOwner={isOwner}
+          onCharacterCreated={setCharacterProfile}
+          onJoin={() => handleStart(Boolean(savedGame))}
+          onOpenObjectCreator={() => {
+            setAdminOpen(true)
+            setAdminTool('editor')
+          }}
         />
       )}
 
@@ -311,7 +358,7 @@ export default function App() {
           </div>
 
           {/* Cinématique nouveau joueur */}
-          {isNewPlayer && <CinematicOverlay />}
+          {isNewPlayer && <IntroCinematicOverlay />}
         </>
       )}
 
