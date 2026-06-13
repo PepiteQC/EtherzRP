@@ -25,7 +25,14 @@ import { InteractionKeyboardBridge, InteractionPrompt } from './interactions'
 import { GarageMenu, GarageZone } from './garage'
 import VehicleTrunkInventory from './vehicle/VehicleTrunkInventory'
 import { VolumetricCloud } from './weather'
+<<<<<<< HEAD
 import { HDVisualRig, WorldGraphics } from './graphics'
+=======
+<<<<<<< HEAD
+=======
+import { WorldGraphics } from './graphics'
+>>>>>>> 57c10a0 (Add dashboard, world components, and project archive files)
+>>>>>>> 9cfcf813650b52c38febb2f6437efd1af52ab38c
 import { writeSave, type SaveData } from '../../hooks/useSaveSystem'
 import { getBuildingDoors, type DoorZone, type BuildingDef } from '../../data/quebecBuildings'
 import { startJob, getState as getGameState } from '../../store/gameState'
@@ -344,6 +351,7 @@ function Scene({
       <EtherPhysics>
         <WorldPhysicsColliders />
 
+<<<<<<< HEAD
         <Sky />
         <WorldGraphics />
         {!IS_LOW_END && (
@@ -383,6 +391,54 @@ function Scene({
         {/* ── Cinématique ── */}
         {!cinematicDone && <CinematicIntro onComplete={onCinematicComplete} />}
 
+=======
+      {/* ── Environnement + couche physique Cannon ── */}
+      <EtherPhysics>
+        <WorldPhysicsColliders />
+
+        <Sky />
+<<<<<<< HEAD
+=======
+        <WorldGraphics />
+>>>>>>> 57c10a0 (Add dashboard, world components, and project archive files)
+        {!IS_LOW_END && (
+          <>
+            <VolumetricCloud position={[0, 98, -430]} scale={[280, 82, 175]} opacity={0.18} steps={68} />
+            <VolumetricCloud position={[-220, 118, -180]} scale={[190, 62, 130]} opacity={0.13} threshold={0.29} steps={56} speed={0.032} />
+          </>
+        )}
+        <Terrain />
+        <Road />
+        <Trees />
+        <Buildings />
+        <QuebecCityEnhanced />
+
+        {/* ✅ FIX sol: plus large + plus long pour pas voir les bords */}
+        <mesh
+          position={[0, -0.1, 0]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          receiveShadow
+          frustumCulled
+        >
+          <planeGeometry args={[1200, 2200]} />
+          <meshLambertMaterial color="#2a4a2a" />
+        </mesh>
+
+        {/* ── EtherWorld City ── */}
+        <EtherWorldCity />
+
+        {/* ── BEEF CONNECTÉ: composants 3D secondaires branchés au monde principal */}
+        <WorldBeef />
+
+        {/* ── Runtime ville: branche CITY_BUILDINGS + MODEL_DEFS au monde EtherWorld */}
+        <group position={[0, 0, 900]}>
+          <CityRuntime />
+        </group>
+
+        {/* ── Cinématique ── */}
+        {!cinematicDone && <CinematicIntro onComplete={onCinematicComplete} />}
+
+>>>>>>> 9cfcf813650b52c38febb2f6437efd1af52ab38c
         {/* ── Véhicule ── */}
         <Vehicle
           active={mode === 'driving' && cinematicDone && !interior}

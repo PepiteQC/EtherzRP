@@ -11,7 +11,11 @@ import { Game } from './components/etherworld'
 import { HUD } from './components/HUD'
 import CityIntro from './components/intro/CityIntro'
 import IntroCinematicOverlay from './components/intro/CinematicOverlay'
+<<<<<<< HEAD
 import EtherworldConnectionScreen from './components/dashboard/EtherworldConnectionScreen'
+=======
+import EtherworldDashboard from './components/dashboard/EtherworldDashboard'
+>>>>>>> 9cfcf813650b52c38febb2f6437efd1af52ab38c
 import { loadCharacterProfile, type EtherworldCharacterProfile } from './components/dashboard/characterProfile'
 import RayMarchingKinect from './components/kinect/RayMarchingKinect'
 import AdminConsole from './admin/AdminConsole'
@@ -30,6 +34,14 @@ const OWNER_EMAILS = (import.meta.env.VITE_OWNER_EMAILS ?? 'pepiteqc@gmail.com,o
   .split(',')
   .map((email: string) => email.trim().toLowerCase())
   .filter(Boolean)
+<<<<<<< HEAD
+=======
+
+const OWNER_EMAILS = (import.meta.env.VITE_OWNER_EMAILS ?? 'pepiteqc@gmail.com,owner@etherworld.local')
+  .split(',')
+  .map((email: string) => email.trim().toLowerCase())
+  .filter(Boolean)
+>>>>>>> 9cfcf813650b52c38febb2f6437efd1af52ab38c
 
 // Save chargée UNE SEULE FOIS au module load (synchrone garanti)
 const INITIAL_SAVE = loadSave()
@@ -259,7 +271,26 @@ export default function App() {
           MENU
           ════════════════════════════════════ */}
       {phase === 'menu' && (
+<<<<<<< HEAD
         <EtherworldConnectionScreen onComplete={() => handleStart(Boolean(savedGame))} />
+=======
+        <EtherworldDashboard
+          savedGame={savedGame}
+          ownerId={ownerId}
+          hasCharacter={Boolean(characterProfile)}
+          isOwner={isOwner}
+          onCharacterCreated={setCharacterProfile}
+          onJoin={() => handleStart(Boolean(savedGame))}
+          onOpenObjectCreator={() => {
+            setAdminOpen(true)
+<<<<<<< HEAD
+            setAdminTool('editor')
+=======
+            setAdminTool('objectCreator')
+>>>>>>> 57c10a0 (Add dashboard, world components, and project archive files)
+          }}
+        />
+>>>>>>> 9cfcf813650b52c38febb2f6437efd1af52ab38c
       )}
 
       {/* ════════════════════════════════════
