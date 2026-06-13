@@ -24,7 +24,12 @@ import type { DoorZone } from './data/quebecBuildings'
 
 // ─────────────────────────────────────────────
 type Phase = 'menu' | 'game' | 'kinect'
-type AdminTool = 'editor' | 'agent' | 'weather' | 'stats' | null
+type AdminTool = 'editor' | 'agent' | 'weather' | 'objectCreator' | 'stats' | null
+
+const OWNER_EMAILS = (import.meta.env.VITE_OWNER_EMAILS ?? 'pepiteqc@gmail.com,owner@etherworld.local')
+  .split(',')
+  .map((email: string) => email.trim().toLowerCase())
+  .filter(Boolean)
 
 const OWNER_EMAILS = (import.meta.env.VITE_OWNER_EMAILS ?? 'pepiteqc@gmail.com,owner@etherworld.local')
   .split(',')
@@ -268,7 +273,11 @@ export default function App() {
           onJoin={() => handleStart(Boolean(savedGame))}
           onOpenObjectCreator={() => {
             setAdminOpen(true)
+<<<<<<< HEAD
             setAdminTool('editor')
+=======
+            setAdminTool('objectCreator')
+>>>>>>> 57c10a0 (Add dashboard, world components, and project archive files)
           }}
         />
       )}

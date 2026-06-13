@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import type { Triplet } from "@react-three/cannon";
 
 export const ETHER_PHYSICS = {
@@ -16,6 +17,21 @@ export const ETHER_PHYSICS = {
     frictionEquationStiffness: 1e7,
     frictionEquationRelaxation: 4,
   },
+=======
+export const ETHER_PHYSICS = {
+  gravity: [0, -28, 0] as [number, number, number],
+  timeStep: 1 / 60,
+  maxVelocityIterations: 8,
+  maxStabilizationIterations: 4,
+  interpolation: true,
+  updatePriority: -1,
+} as const;
+
+export const PHYSICS_ENGINE = {
+  current: 'rapier',
+  reason: 'Rapier est déjà dans le projet, WASM, activement maintenu et plus adapté long terme pour véhicules/personnages RP.',
+  legacy: 'cannon reste disponible pour les anciens composants déjà présents dans le repo.',
+>>>>>>> 57c10a0 (Add dashboard, world components, and project archive files)
 } as const;
 
 export const PHYSICS_LAYERS = {
@@ -27,6 +43,7 @@ export const PHYSICS_LAYERS = {
   prop: 32,
 } as const;
 
+<<<<<<< HEAD
 export const COLLIDER_MATERIAL = {
   ground: "groundMaterial",
   road: "roadMaterial",
@@ -39,10 +56,20 @@ export const COLLIDER_MATERIAL = {
 export const WORLD_COLLIDER = {
   groundSize: 2600,
   groundY: -0.12,
+=======
+export const WORLD_COLLIDER = {
+  groundSize: 2600,
+  groundThickness: 0.22,
+  groundY: -0.16,
+>>>>>>> 57c10a0 (Add dashboard, world components, and project archive files)
   roadHeight: 0.12,
   buildingPadding: 0.65,
   buildingMinHeight: 2,
   propColliderHeight: 1.25,
 } as const;
 
+<<<<<<< HEAD
 export type ColliderDebugMode = "off" | "buildings" | "roads" | "all";
+=======
+export type ColliderDebugMode = 'off' | 'buildings' | 'roads' | 'all';
+>>>>>>> 57c10a0 (Add dashboard, world components, and project archive files)

@@ -1,7 +1,15 @@
+<<<<<<< HEAD
 import { useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { SaveData } from '../../hooks/useSaveSystem'
 import { saveCharacterProfile, type EtherworldCharacterProfile } from './characterProfile'
+=======
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import type { SaveData } from '../../hooks/useSaveSystem'
+import { saveCharacterProfile, type EtherworldCharacterProfile } from './characterProfile'
+import { CartoonDashboardScene } from './cartoon'
+>>>>>>> 57c10a0 (Add dashboard, world components, and project archive files)
 
 interface EtherworldDashboardProps {
   savedGame: SaveData | null
@@ -13,6 +21,7 @@ interface EtherworldDashboardProps {
   onOpenObjectCreator: () => void
 }
 
+<<<<<<< HEAD
 const ORIGINS: EtherworldCharacterProfile['origin'][] = ['Portneuf', 'Québec', 'Trois-Rivières', 'Côte-Nord', 'Montréal', 'Autre']
 const STYLES: Array<{ id: EtherworldCharacterProfile['style']; label: string }> = [
   { id: 'civil', label: 'Civil' },
@@ -22,6 +31,8 @@ const STYLES: Array<{ id: EtherworldCharacterProfile['style']; label: string }> 
   { id: 'mecano', label: 'Mécano' },
 ]
 
+=======
+>>>>>>> 57c10a0 (Add dashboard, world components, and project archive files)
 export default function EtherworldDashboard({
   savedGame,
   ownerId,
@@ -33,6 +44,7 @@ export default function EtherworldDashboard({
 }: EtherworldDashboardProps) {
   const [creatorOpen, setCreatorOpen] = useState(false)
   const [name, setName] = useState('')
+<<<<<<< HEAD
   const [origin, setOrigin] = useState<EtherworldCharacterProfile['origin']>('Portneuf')
   const [style, setStyle] = useState<EtherworldCharacterProfile['style']>('civil')
 
@@ -51,18 +63,29 @@ export default function EtherworldDashboard({
       setCreatorOpen(true)
       return
     }
+=======
+
+  const handleJoin = () => {
+    // Le créateur de personnage est optionnel pour l'instant.
+    // Il ne doit jamais bloquer l'entrée en ville.
+>>>>>>> 57c10a0 (Add dashboard, world components, and project archive files)
     onJoin()
   }
 
   const handleCreate = () => {
     const cleanName = name.trim() || 'Citoyen EtherWorld'
+<<<<<<< HEAD
     const profile = saveCharacterProfile(ownerId, { name: cleanName, origin, style })
+=======
+    const profile = saveCharacterProfile(ownerId, { name: cleanName, origin: 'Autre', style: 'civil' })
+>>>>>>> 57c10a0 (Add dashboard, world components, and project archive files)
     onCharacterCreated(profile)
     setCreatorOpen(false)
   }
 
   return (
     <div style={styles.root}>
+<<<<<<< HEAD
       <div style={styles.noise} />
       <div style={styles.vignette} />
       <div style={styles.grid} />
@@ -75,6 +98,10 @@ export default function EtherworldDashboard({
           transition={{ duration: p.duration, delay: p.delay, repeat: Infinity }}
         />
       ))}
+=======
+      <CartoonDashboardScene />
+      <div style={styles.softVignette} />
+>>>>>>> 57c10a0 (Add dashboard, world components, and project archive files)
 
       <header style={styles.header}>
         <div style={styles.miniLogo}>ETHERWORLD</div>
@@ -92,12 +119,18 @@ export default function EtherworldDashboard({
           transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
           style={styles.hero}
         >
+<<<<<<< HEAD
           <div style={styles.eyebrow}>QUÉBEC · ROUTE 138 · RP</div>
           <h1 style={styles.logo}>
             ETHER<span>WORLD</span>
           </h1>
           <div style={styles.subtitle}>Portneuf vers EtherWorld City</div>
 
+=======
+          <h1 style={styles.logo}>
+            ETHER<span>WORLD</span>
+          </h1>
+>>>>>>> 57c10a0 (Add dashboard, world components, and project archive files)
           <button style={styles.joinButton} onClick={handleJoin}>
             Rejoindre EtherWorld
           </button>
@@ -114,11 +147,15 @@ export default function EtherworldDashboard({
             </motion.button>
           )}
 
+<<<<<<< HEAD
           {savedGame && (
             <div style={styles.saveHint}>
               Sauvegarde trouvée · {savedGame.zone ?? 'Route 138'} · {savedGame.mode === 'walking' ? 'À pied' : 'En voiture'}
             </div>
           )}
+=======
+
+>>>>>>> 57c10a0 (Add dashboard, world components, and project archive files)
         </motion.div>
       </main>
 
@@ -154,6 +191,7 @@ export default function EtherworldDashboard({
                 maxLength={32}
               />
 
+<<<<<<< HEAD
               <label style={styles.label}>Origine</label>
               <div style={styles.pills}>
                 {ORIGINS.map(o => (
@@ -168,11 +206,17 @@ export default function EtherworldDashboard({
                 ))}
               </div>
 
+=======
+>>>>>>> 57c10a0 (Add dashboard, world components, and project archive files)
               <button style={{ ...styles.joinButton, width: '100%', marginTop: 22 }} onClick={handleCreate}>
                 Sauvegarder le personnage
               </button>
               <p style={styles.modalNote}>
+<<<<<<< HEAD
                 Le personnage est sauvegardé localement pour ton compte/session. Quand un personnage existe, cette section disparaît du dashboard.
+=======
+                Création optionnelle pour test. Tu peux rejoindre EtherWorld même sans personnage.
+>>>>>>> 57c10a0 (Add dashboard, world components, and project archive files)
               </p>
             </motion.div>
           </motion.div>
@@ -185,6 +229,7 @@ export default function EtherworldDashboard({
 const styles: Record<string, React.CSSProperties> = {
   root: {
     position: 'absolute', inset: 0, zIndex: 10, overflow: 'hidden',
+<<<<<<< HEAD
     background: 'radial-gradient(ellipse at 50% 32%, #13122a 0%, #080912 42%, #020207 100%)',
     color: '#fff', fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif',
   },
@@ -209,6 +254,20 @@ const styles: Record<string, React.CSSProperties> = {
   subtitle: { marginTop: 18, color: 'rgba(255,255,255,0.32)', letterSpacing: 5, textTransform: 'uppercase', fontSize: 12 },
   joinButton: { marginTop: 42, padding: '18px 34px', minWidth: 300, borderRadius: 18, border: '1px solid rgba(34,211,238,0.42)', background: 'linear-gradient(135deg, rgba(124,58,237,0.9), rgba(34,211,238,0.82))', color: '#fff', fontWeight: 950, letterSpacing: 3, textTransform: 'uppercase', cursor: 'pointer', boxShadow: '0 0 44px rgba(124,58,237,0.35), inset 0 1px 0 rgba(255,255,255,0.22)' },
   createButton: { display: 'block', margin: '14px auto 0', padding: '11px 22px', borderRadius: 999, border: '1px solid rgba(255,255,255,0.11)', background: 'rgba(255,255,255,0.045)', color: 'rgba(255,255,255,0.62)', cursor: 'pointer', fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', fontSize: 11 },
+=======
+    background: '#79c8f2',
+    color: '#fff', fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif',
+  },
+  softVignette: { position: 'absolute', inset: 0, boxShadow: 'inset 0 0 140px 45px rgba(71,45,23,0.22)', pointerEvents: 'none', zIndex: 1 },
+  header: { position: 'absolute', top: 0, left: 0, right: 0, height: 78, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px', zIndex: 3 },
+  miniLogo: { color: '#ffffff', fontWeight: 950, letterSpacing: 1.5, fontSize: 22, textShadow: '0 3px 0 rgba(75,50,28,0.35), 0 10px 22px rgba(75,50,28,0.25)' },
+  ownerButton: { background: 'rgba(255,255,255,0.72)', border: '2px solid rgba(92,44,34,0.22)', color: '#5c2c22', borderRadius: 999, padding: '10px 16px', fontSize: 10, fontWeight: 900, letterSpacing: 2, cursor: 'pointer', textTransform: 'uppercase', boxShadow: '0 8px 0 rgba(92,44,34,0.12)' },
+  center: { position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', padding: 24, zIndex: 2 },
+  hero: { textAlign: 'center', width: 'min(760px, 100%)', transform: 'translateY(-18px)' },
+  logo: { margin: 0, fontSize: 'clamp(58px, 11vw, 132px)', lineHeight: 0.86, fontWeight: 950, letterSpacing: '-0.07em', color: '#fff7e8', textShadow: '0 5px 0 #5c2c22, 0 14px 0 rgba(217,93,43,0.22), 0 24px 44px rgba(92,44,34,0.32)' },
+  joinButton: { marginTop: 42, padding: '18px 34px', minWidth: 300, borderRadius: 22, border: '3px solid rgba(92,44,34,0.24)', background: 'linear-gradient(180deg, #ff9a3d, #d95d2b)', color: '#fff7e8', fontWeight: 950, letterSpacing: 3, textTransform: 'uppercase', cursor: 'pointer', boxShadow: '0 9px 0 #9f3f24, 0 22px 34px rgba(92,44,34,0.28)', textShadow: '0 2px 0 rgba(92,44,34,0.28)' },
+  createButton: { display: 'block', margin: '18px auto 0', padding: '11px 22px', borderRadius: 999, border: '2px solid rgba(92,44,34,0.18)', background: 'rgba(255,247,232,0.76)', color: '#5c2c22', cursor: 'pointer', fontWeight: 900, letterSpacing: 2, textTransform: 'uppercase', fontSize: 11, boxShadow: '0 6px 0 rgba(92,44,34,0.10)' },
+>>>>>>> 57c10a0 (Add dashboard, world components, and project archive files)
   saveHint: { marginTop: 18, color: 'rgba(255,255,255,0.22)', fontSize: 11, letterSpacing: 1.6 },
   modalBackdrop: { position: 'fixed', inset: 0, zIndex: 50, display: 'grid', placeItems: 'center', padding: 20, background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(10px)' },
   modal: { width: 'min(560px, 100%)', borderRadius: 24, padding: 24, background: 'linear-gradient(180deg, rgba(10,12,24,0.98), rgba(8,8,16,0.96))', border: '1px solid rgba(168,85,247,0.28)', boxShadow: '0 30px 100px rgba(0,0,0,0.65)' },

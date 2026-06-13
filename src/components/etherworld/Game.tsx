@@ -25,6 +25,10 @@ import { InteractionKeyboardBridge, InteractionPrompt } from './interactions'
 import { GarageMenu, GarageZone } from './garage'
 import VehicleTrunkInventory from './vehicle/VehicleTrunkInventory'
 import { VolumetricCloud } from './weather'
+<<<<<<< HEAD
+=======
+import { WorldGraphics } from './graphics'
+>>>>>>> 57c10a0 (Add dashboard, world components, and project archive files)
 import { writeSave, type SaveData } from '../../hooks/useSaveSystem'
 import { getBuildingDoors, type DoorZone, type BuildingDef } from '../../data/quebecBuildings'
 import { startJob, getState as getGameState } from '../../store/gameState'
@@ -363,6 +367,10 @@ function Scene({
         <WorldPhysicsColliders />
 
         <Sky />
+<<<<<<< HEAD
+=======
+        <WorldGraphics />
+>>>>>>> 57c10a0 (Add dashboard, world components, and project archive files)
         {!IS_LOW_END && (
           <>
             <VolumetricCloud position={[0, 98, -430]} scale={[280, 82, 175]} opacity={0.18} steps={68} />
