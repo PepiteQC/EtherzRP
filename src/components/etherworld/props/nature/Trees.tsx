@@ -1,0 +1,3 @@
+export function ForestPatch({ position = [0, 0, 0] as [number, number, number], radius = 25, density = 12 }: { position?: [number, number, number]; radius?: number; density?: number; season?: string }) {
+  return <group position={position}>{Array.from({ length: density }).map((_, i) => { const a = (i / density) * Math.PI * 2; const r = radius * (0.25 + ((i * 37) % 100) / 140); return <group key={i} position={[Math.cos(a) * r, 0, Math.sin(a) * r]}><mesh position={[0, 1.3, 0]}><coneGeometry args={[0.7, 2.4, 8]} /><meshStandardMaterial color="#14532d" /></mesh><mesh position={[0, 0.45, 0]}><cylinderGeometry args={[0.12, 0.16, 0.9, 8]} /><meshStandardMaterial color="#78350f" /></mesh></group> })}</group>
+}
