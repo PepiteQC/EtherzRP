@@ -1,0 +1,293 @@
+/* PhoneUI.module.css — EtherWorld RP */
+.phoneOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 24px;
+  pointer-events: none;
+}
+
+.phone {
+  pointer-events: all;
+  width: 260px;
+  height: 520px;
+  background: linear-gradient(180deg, #0a0f1c 0%, #080c18 100%);
+  border: 1.5px solid rgba(80, 140, 220, 0.5);
+  border-radius: 28px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 0 40px rgba(40, 100, 220, 0.2), 0 20px 60px rgba(0, 0, 0, 0.7);
+  font-family: monospace;
+  position: relative;
+  bottom: -20px;
+  animation: phoneSlideIn 0.25s ease;
+}
+
+@keyframes phoneSlideIn {
+  from { opacity: 0; transform: translateY(30px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Notch */
+.notch {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  background: rgba(5, 10, 25, 0.9);
+  border-bottom: 1px solid rgba(40, 80, 140, 0.3);
+}
+
+.time {
+  font-size: 11px;
+  font-weight: bold;
+  color: #c0d8f0;
+  letter-spacing: 2px;
+}
+
+.carrier {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #4a90d9;
+  text-transform: uppercase;
+}
+
+.battery {
+  font-size: 10px;
+  color: #4adb8a;
+}
+
+/* Screen */
+.screen {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(60, 100, 180, 0.4) transparent;
+}
+
+/* Home grid */
+.homeGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 8px;
+}
+
+.appIcon {
+  background: rgba(15, 25, 55, 0.8);
+  border: 1px solid rgba(60, 100, 180, 0.35);
+  border-radius: 14px;
+  color: #c0d8f0;
+  font-size: 10px;
+  padding: 14px 8px;
+  cursor: pointer;
+  text-align: center;
+  line-height: 1.8;
+  transition: all 0.15s;
+  font-family: monospace;
+}
+
+.appIcon:hover {
+  background: rgba(25, 45, 90, 0.9);
+  border-color: rgba(80, 130, 220, 0.6);
+  transform: scale(1.04);
+}
+
+.emergency {
+  background: rgba(40, 10, 10, 0.8) !important;
+  border-color: rgba(220, 60, 60, 0.5) !important;
+  color: #ff7070 !important;
+}
+
+.emergency:hover {
+  background: rgba(80, 15, 15, 0.9) !important;
+  border-color: rgba(220, 80, 80, 0.8) !important;
+}
+
+/* Dialer */
+.dialer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.dialInput {
+  width: 100%;
+  background: rgba(10, 20, 45, 0.8);
+  border: 1px solid rgba(60, 100, 180, 0.4);
+  border-radius: 6px;
+  color: #8acfff;
+  font-family: monospace;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 10px 14px;
+  text-align: center;
+  letter-spacing: 3px;
+  outline: none;
+}
+
+.numpad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  width: 100%;
+}
+
+.numKey {
+  background: rgba(15, 30, 60, 0.8);
+  border: 1px solid rgba(50, 90, 160, 0.35);
+  border-radius: 50%;
+  color: #c0d8f0;
+  font-family: monospace;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.1s;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.numKey:hover {
+  background: rgba(25, 50, 100, 0.9);
+  border-color: rgba(80, 130, 220, 0.6);
+}
+
+.callBtn {
+  width: 100%;
+  background: rgba(15, 80, 30, 0.8);
+  border: 1.5px solid rgba(50, 200, 80, 0.6);
+  border-radius: 8px;
+  color: #60ef90;
+  font-family: monospace;
+  font-size: 13px;
+  padding: 12px;
+  cursor: pointer;
+  letter-spacing: 2px;
+  transition: all 0.15s;
+}
+
+.callBtn:hover {
+  background: rgba(25, 110, 45, 0.9);
+}
+
+/* SMS App */
+.smsApp {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.smsInput, .smsTextarea {
+  background: rgba(10, 20, 45, 0.8);
+  border: 1px solid rgba(60, 100, 180, 0.4);
+  border-radius: 6px;
+  color: #c0d8f0;
+  font-family: monospace;
+  font-size: 11px;
+  padding: 8px 12px;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.smsTextarea {
+  height: 80px;
+  resize: none;
+}
+
+.sendBtn {
+  background: rgba(20, 60, 120, 0.8);
+  border: 1.5px solid rgba(60, 120, 220, 0.6);
+  border-radius: 6px;
+  color: #8acfff;
+  font-family: monospace;
+  font-size: 11px;
+  padding: 8px 16px;
+  cursor: pointer;
+  letter-spacing: 2px;
+  transition: all 0.15s;
+}
+
+.sendBtn:hover {
+  background: rgba(30, 80, 160, 0.9);
+}
+
+/* Bank App */
+.bankApp {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  padding: 16px 0;
+  color: #c0d8f0;
+}
+
+.bankApp h3 {
+  font-size: 13px;
+  letter-spacing: 2px;
+  margin: 0;
+  color: #ffd700;
+}
+
+.bankApp p {
+  font-size: 18px;
+  font-weight: bold;
+  color: #4adb8a;
+  margin: 0;
+}
+
+.bankBtn {
+  width: 100%;
+  background: rgba(15, 30, 60, 0.8);
+  border: 1px solid rgba(60, 100, 180, 0.35);
+  border-radius: 6px;
+  color: #8acfff;
+  font-family: monospace;
+  font-size: 11px;
+  padding: 10px;
+  cursor: pointer;
+  letter-spacing: 2px;
+  transition: all 0.15s;
+}
+
+.bankBtn:hover {
+  background: rgba(25, 50, 100, 0.9);
+  border-color: rgba(80, 130, 220, 0.6);
+}
+
+/* Bottom bar */
+.bottomBar {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 8px 16px;
+  border-top: 1px solid rgba(40, 80, 140, 0.3);
+  background: rgba(5, 10, 25, 0.9);
+}
+
+.homeBtn {
+  background: transparent;
+  border: 1px solid rgba(60, 100, 180, 0.35);
+  border-radius: 6px;
+  color: #6090c0;
+  font-family: monospace;
+  font-size: 10px;
+  padding: 6px 14px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all 0.15s;
+}
+
+.homeBtn:hover {
+  background: rgba(20, 40, 80, 0.6);
+  color: #8abde0;
+}

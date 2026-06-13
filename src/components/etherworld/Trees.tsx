@@ -70,9 +70,9 @@ export default function Trees() {
         return (
           <group key={tree.id} position={[tree.x, 0, tree.z]}>
             {/* Trunk */}
-            <mesh position={[0, tree.height * 0.25, 0]} castShadow>
+            <mesh position={[0, tree.height * 0.25, 0]} castShadow receiveShadow>
               <cylinderGeometry args={[0.2, 0.3, tree.height * 0.5, 5]} />
-              <meshLambertMaterial color={trunkColor} />
+              <meshStandardMaterial color={trunkColor} roughness={0.88} metalness={0.0} />
             </mesh>
 
             {/* Conifer layers - top to bottom, getting wider */}
@@ -82,9 +82,14 @@ export default function Trees() {
               const layerRadius = tree.radius * (0.3 + layerFrac * 0.7);
               const layerH = tree.height * 0.45 / tree.layers;
               return (
-                <mesh key={li} position={[0, layerY, 0]} castShadow>
+                <mesh key={li} position={[0, layerY, 0]} castShadow receiveShadow>
                   <coneGeometry args={[layerRadius, layerH * 2.2, 6]} />
-                  <meshLambertMaterial color={li % 2 === 0 ? treeColor : treeColor2} />
+                  <meshStandardMaterial
+                    color={li % 2 === 0 ? treeColor : treeColor2}
+                    roughness={0.78}
+                    metalness={0.0}
+                    envMapIntensity={0.18}
+                  />
                 </mesh>
               );
             })}

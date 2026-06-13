@@ -85,23 +85,31 @@ export default function Buildings() {
           {/* Building walls */}
           <mesh position={[0, b.h / 2, 0]} castShadow receiveShadow>
             <boxGeometry args={[b.w, b.h, b.d]} />
-            <meshLambertMaterial color={b.wallColor} />
+            <meshStandardMaterial color={b.wallColor} roughness={0.72} metalness={0.03} envMapIntensity={0.22} />
           </mesh>
           {/* Gabled roof */}
           <mesh position={[0, b.h + b.roofH / 2, 0]} castShadow>
             <boxGeometry args={[b.w + 0.4, b.roofH, b.d + 0.4]} />
-            <meshLambertMaterial color={b.roofColor} />
+            <meshStandardMaterial color={b.roofColor} roughness={0.58} metalness={0.05} envMapIntensity={0.28} />
           </mesh>
           {/* Roof peak */}
           <mesh position={[0, b.h + b.roofH + b.roofH * 0.6, 0]}>
             <coneGeometry args={[b.w * 0.72, b.roofH * 1.2, 4]} />
-            <meshLambertMaterial color={b.roofColor} />
+            <meshStandardMaterial color={b.roofColor} roughness={0.6} metalness={0.04} envMapIntensity={0.26} />
           </mesh>
           {/* Windows */}
           {[-1, 1].map(side => (
             <mesh key={side} position={[side * (b.w / 2 + 0.01), b.h * 0.55, 0]} rotation={[0, Math.PI / 2, 0]}>
               <planeGeometry args={[b.d * 0.25, b.h * 0.3]} />
-              <meshBasicMaterial color="#aad4ee" />
+              <meshStandardMaterial
+                color="#9bd7f0"
+                emissive="#5fa8d3"
+                emissiveIntensity={0.22}
+                roughness={0.08}
+                metalness={0.05}
+                transparent
+                opacity={0.82}
+              />
             </mesh>
           ))}
         </group>
@@ -112,20 +120,20 @@ export default function Buildings() {
         <group key={i} position={[c.x, 0, c.z]}>
           <mesh position={[0, c.h / 2, 0]} castShadow>
             <boxGeometry args={[3, c.h, 3]} />
-            <meshLambertMaterial color="#f0ece4" />
+            <meshStandardMaterial color="#f0ece4" roughness={0.7} metalness={0.02} />
           </mesh>
           <mesh position={[0, c.h + 3, 0]} castShadow>
             <coneGeometry args={[1.5, 6, 4]} />
-            <meshLambertMaterial color="#1a2040" />
+            <meshStandardMaterial color="#1a2040" roughness={0.44} metalness={0.12} />
           </mesh>
           {/* Cross */}
           <mesh position={[0, c.h + 6.5, 0]}>
             <boxGeometry args={[0.15, 1.5, 0.15]} />
-            <meshLambertMaterial color="#c8c8c8" />
+            <meshStandardMaterial color="#c8c8c8" metalness={0.35} roughness={0.35} />
           </mesh>
           <mesh position={[0, c.h + 7, 0]}>
             <boxGeometry args={[0.8, 0.15, 0.15]} />
-            <meshLambertMaterial color="#c8c8c8" />
+            <meshStandardMaterial color="#c8c8c8" metalness={0.35} roughness={0.35} />
           </mesh>
         </group>
       ))}
@@ -135,13 +143,13 @@ export default function Buildings() {
         {/* Bridge deck */}
         <mesh position={[0, 0.5, 0]}>
           <boxGeometry args={[30, 0.5, 20]} />
-          <meshLambertMaterial color="#7a7a70" />
+          <meshStandardMaterial color="#7a7a70" roughness={0.82} metalness={0.04} />
         </mesh>
         {/* Bridge supports */}
         {[-10, 10].map(x => (
           <mesh key={x} position={[x, -1.5, 0]}>
             <boxGeometry args={[2, 3, 18]} />
-            <meshLambertMaterial color="#5a5a52" />
+            <meshStandardMaterial color="#5a5a52" roughness={0.86} metalness={0.03} />
           </mesh>
         ))}
       </group>
@@ -149,7 +157,7 @@ export default function Buildings() {
       {/* Fleuve Saint-Laurent (far right) */}
       <mesh position={[200, -0.5, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[300, 2000]} />
-        <meshLambertMaterial color="#1a4a7a" />
+        <meshPhysicalMaterial color="#1a5c8f" roughness={0.24} metalness={0.0} clearcoat={0.55} clearcoatRoughness={0.09} transparent opacity={0.92} />
       </mesh>
 
       {/* Hydro-Québec pylons */}
@@ -157,11 +165,11 @@ export default function Buildings() {
         <group key={i} position={[-35, 0, z]}>
           <mesh position={[0, 10, 0]}>
             <boxGeometry args={[0.3, 20, 0.3]} />
-            <meshLambertMaterial color="#aaaaaa" />
+            <meshStandardMaterial color="#aaaaaa" metalness={0.55} roughness={0.38} />
           </mesh>
           <mesh position={[0, 18, 0]} rotation={[0, 0, Math.PI / 2]}>
             <boxGeometry args={[0.2, 12, 0.2]} />
-            <meshLambertMaterial color="#aaaaaa" />
+            <meshStandardMaterial color="#aaaaaa" metalness={0.55} roughness={0.38} />
           </mesh>
           {/* Insulator */}
           {[-5, 0, 5].map(xi => (

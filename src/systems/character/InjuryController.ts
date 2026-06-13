@@ -17,6 +17,8 @@ export type BodyZone =
 
 export type InjurySeverity = 'none' | 'minor' | 'moderate' | 'severe' | 'critical'
 
+export type LimbSide = 'left' | 'right' | 'center'
+
 export interface ZoneInjury {
   zone:       BodyZone
   severity:   InjurySeverity
@@ -24,6 +26,7 @@ export interface ZoneInjury {
   timestamp:  number
   treated:    boolean
   bleeding:   boolean
+  side?:      LimbSide
 }
 
 export interface BodyCondition {
@@ -75,7 +78,7 @@ export class InjuryController {
   private injuries: Map<BodyZone, ZoneInjury> = new Map()
   private listeners: Set<(condition: BodyCondition) => void> = new Set()
 
-  addInjury(zone: BodyZone, type: string, severity: InjurySeverity): void {
+  addInjury(zone: BodyZone, type: string, severity: InjurySeverity, side?: LimbSide): void {
     const existing = this.injuries.get(zone)
 
     // Aggraver si déjà blessé
@@ -90,6 +93,7 @@ export class InjuryController {
       timestamp:  Date.now(),
       treated:    false,
       bleeding:   newSeverity === 'severe' || newSeverity === 'critical',
+      side:        side ?? existing?.side ?? this.inferSide(zone),
     })
 
     this.notify()
@@ -167,9 +171,12 @@ export class InjuryController {
         }[injury.severity]
       }
 
-      // Déterminer côté boiterie
+      // Déterminer côté boiterie.
+      // Ancien code: zone.includes('_L') ne pouvait pas marcher avec BodyZone = 'upper_leg' | 'foot'.
+      // On respecte maintenant le côté optionnel de l'injury, avec fallback stable.
       if (effects.isLimping) {
-        condition.limp = zone.includes('_L') ? 'left' : 'right'
+        const side = injury.side ?? this.inferSide(zone)
+        condition.limp = side === 'left' ? 'left' : side === 'right' ? 'right' : condition.limp
       }
     })
 
@@ -177,6 +184,15 @@ export class InjuryController {
     condition.moveSpeedMult = Math.max(0.15, condition.moveSpeedMult)
 
     return condition
+  }
+
+  private inferSide(zone: BodyZone): LimbSide {
+    // Les BodyZone historiques ne contiennent pas encore gauche/droite.
+    // Pour compatibilité: zones de jambes/pieds sans side explicite = right.
+    // Les nouveaux appels peuvent passer addInjury('lower_leg', 'fracture', 'severe', 'left').
+    if (zone.includes('leg') || zone === 'foot') return 'right'
+    if (zone.includes('arm') || zone === 'hand') return 'right'
+    return 'center'
   }
 
   private escalateSeverity(current: InjurySeverity, incoming: InjurySeverity): InjurySeverity {

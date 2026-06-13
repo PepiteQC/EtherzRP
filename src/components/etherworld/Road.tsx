@@ -2,7 +2,40 @@ import { useMemo } from "react";
 import * as THREE from "three";
 import { PORTNEUF_ROADS, TOWNS } from "../../utils/roadNetwork";
 
+function useAsphaltTexture() {
+  return useMemo(() => {
+    const size = 256;
+    const canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d")!;
+    ctx.fillStyle = "#343634";
+    ctx.fillRect(0, 0, size, size);
+    for (let i = 0; i < 6500; i++) {
+      const v = 42 + Math.random() * 34;
+      const a = 0.10 + Math.random() * 0.18;
+      ctx.fillStyle = `rgba(${v},${v},${v},${a})`;
+      ctx.fillRect(Math.random() * size, Math.random() * size, 1 + Math.random() * 1.5, 1 + Math.random() * 1.5);
+    }
+    for (let y = 0; y < size; y += 18) {
+      ctx.strokeStyle = "rgba(255,255,255,0.018)";
+      ctx.beginPath();
+      ctx.moveTo(0, y + Math.sin(y) * 2);
+      ctx.lineTo(size, y + Math.cos(y) * 2);
+      ctx.stroke();
+    }
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(1.5, 18);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.needsUpdate = true;
+    return tex;
+  }, []);
+}
+
 export default function Road() {
+  const asphaltTexture = useAsphaltTexture();
   const roadMeshes = useMemo(() => {
     return PORTNEUF_ROADS.map((road) => {
       const dx = road.end[0] - road.start[0];
@@ -22,13 +55,21 @@ export default function Road() {
           {/* Épaule de la route */}
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.005, 0]} receiveShadow>
             <planeGeometry args={[road.width + 4, length + 4]} />
-            <meshLambertMaterial color="#5a5a52" />
+            <meshStandardMaterial color="#5f6158" roughness={0.92} metalness={0.02} />
           </mesh>
           
-          {/* Asphalte */}
+          {/* Asphalte HD cartoon: texture fine + clearcoat léger pour reflets contrôlés */}
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
             <planeGeometry args={[road.width, length]} />
-            <meshLambertMaterial color={roadColor} />
+            <meshPhysicalMaterial
+              color={roadColor}
+              map={asphaltTexture}
+              roughness={0.62}
+              metalness={0.0}
+              clearcoat={0.32}
+              clearcoatRoughness={0.18}
+              envMapIntensity={0.35}
+            />
           </mesh>
 
           {/* Ligne jaune pour les rangs et routes */}
@@ -42,9 +83,9 @@ export default function Road() {
           {/* Autoroute 40 avec voies et muret */}
           {road.type === 'highway' && (
             <>
-              <mesh position={[0, 0.25, 0]}>
+              <mesh position={[0, 0.25, 0]} castShadow receiveShadow>
                 <boxGeometry args={[0.8, 0.5, length]} />
-                <meshLambertMaterial color="#888880" />
+                <meshStandardMaterial color="#8b8d84" roughness={0.72} metalness={0.04} />
               </mesh>
               <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-road.width/4, 0.01, 0]}>
                 <planeGeometry args={[0.2, length]} />
@@ -59,7 +100,7 @@ export default function Road() {
         </group>
       );
     });
-  }, []);
+  }, [asphaltTexture]);
 
   return (
     <group>
@@ -70,11 +111,11 @@ export default function Road() {
         <group key={town.name} position={[town.x + 8, 0, town.z + 10]}>
           <mesh position={[0, 1.5, 0]} castShadow>
             <cylinderGeometry args={[0.06, 0.06, 3, 6]} />
-            <meshLambertMaterial color="#888888" />
+            <meshStandardMaterial color="#888888" metalness={0.35} roughness={0.45} />
           </mesh>
           <mesh position={[0, 3.2, 0]} castShadow>
             <boxGeometry args={[0.2, 0.8, 4]} />
-            <meshLambertMaterial color="#1a5fa8" />
+            <meshStandardMaterial color="#1a5fa8" roughness={0.36} metalness={0.08} emissive="#082040" emissiveIntensity={0.08} />
           </mesh>
         </group>
       ))}

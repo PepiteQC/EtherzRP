@@ -1,0 +1,839 @@
+{
+  "results": [
+    {
+      "Category": "Structure",
+      "Item": "console/CommandParser.ts",
+      "Status": "PASS",
+      "Detail": "(326 lignes)"
+    },
+    {
+      "Category": "Structure",
+      "Item": "console/CommandLogger.ts",
+      "Status": "PASS",
+      "Detail": "(292 lignes)"
+    },
+    {
+      "Category": "Structure",
+      "Item": "console/AdminConsoleUI.tsx",
+      "Status": "PASS",
+      "Detail": "(267 lignes)"
+    },
+    {
+      "Category": "Structure",
+      "Item": "console/AdminConsoleManager.ts",
+      "Status": "PASS",
+      "Detail": "(249 lignes)"
+    },
+    {
+      "Category": "Structure",
+      "Item": "permissions/PermissionSystem.ts",
+      "Status": "PASS",
+      "Detail": "(274 lignes)"
+    },
+    {
+      "Category": "Structure",
+      "Item": "commands/StandardCommands.ts",
+      "Status": "PASS",
+      "Detail": "(368 lignes)"
+    },
+    {
+      "Category": "Structure",
+      "Item": "index.ts",
+      "Status": "PASS",
+      "Detail": "(39 lignes)"
+    },
+    {
+      "Category": "Structure",
+      "Item": "README.md",
+      "Status": "PASS",
+      "Detail": "(367 lignes)"
+    },
+    {
+      "Category": "Structure",
+      "Item": "AdminConsoleExample.tsx",
+      "Status": "PASS",
+      "Detail": "(105 lignes)"
+    },
+    {
+      "Category": "CommandParser",
+      "Item": "getHistory()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandParser",
+      "Item": "getHistoryNext()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandParser",
+      "Item": "getHistoryPrevious()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandParser",
+      "Item": "parseCommand()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandParser",
+      "Item": "executeCommand()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandParser",
+      "Item": "Type: player",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandParser",
+      "Item": "Type: number",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandParser",
+      "Item": "Historique (limit)",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandParser",
+      "Item": "Tokenizer guillemets",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandParser",
+      "Item": "Error InsufficientPerms",
+      "Status": "FAIL",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandParser",
+      "Item": "Type conversion",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandParser",
+      "Item": "registerCommands()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandParser",
+      "Item": "getAvailableCommands()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandParser",
+      "Item": "Validation permissions",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandParser",
+      "Item": "Type: string",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandParser",
+      "Item": "registerCommand()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandParser",
+      "Item": "Error CommandNotFound",
+      "Status": "FAIL",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandParser",
+      "Item": "ParsedCommand type",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandParser",
+      "Item": "Lignes suffisantes (350+)",
+      "Status": "PASS",
+      "Detail": "(326 lignes)"
+    },
+    {
+      "Category": "PermissionSystem",
+      "Item": "Level: USER",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "PermissionSystem",
+      "Item": "Level: MODERATOR",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "PermissionSystem",
+      "Item": "Level: ADMIN",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "PermissionSystem",
+      "Item": "Level: OWNER",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "PermissionSystem",
+      "Item": "hasPermission()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "PermissionSystem",
+      "Item": "hasPermissionLevel()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "PermissionSystem",
+      "Item": "getAdmin()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "PermissionSystem",
+      "Item": "promoteUser()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "PermissionSystem",
+      "Item": "getUserPermissions()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "PermissionSystem",
+      "Item": "removeFlag()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "PermissionSystem",
+      "Item": "getAllAdmins()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "PermissionSystem",
+      "Item": "addFlag()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "PermissionSystem",
+      "Item": "getPermissionName()",
+      "Status": "FAIL",
+      "Detail": ""
+    },
+    {
+      "Category": "PermissionSystem",
+      "Item": "registerAdmin()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "PermissionSystem",
+      "Item": "Permission matrix",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "PermissionSystem",
+      "Item": "AdminFlags définis",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "PermissionSystem",
+      "Item": "Lignes suffisantes (300+)",
+      "Status": "PASS",
+      "Detail": "(274 lignes)"
+    },
+    {
+      "Category": "StandardCommands",
+      "Item": "/kick",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "StandardCommands",
+      "Item": "/ban",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "StandardCommands",
+      "Item": "/mute",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "StandardCommands",
+      "Item": "/warn",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "StandardCommands",
+      "Item": "/tp",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "StandardCommands",
+      "Item": "/tpm",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "StandardCommands",
+      "Item": "/tpc",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "StandardCommands",
+      "Item": "/back",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "StandardCommands",
+      "Item": "/freeze",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "StandardCommands",
+      "Item": "/godmode",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "StandardCommands",
+      "Item": "/invisible",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "StandardCommands",
+      "Item": "/heal",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "StandardCommands",
+      "Item": "/armor",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "StandardCommands",
+      "Item": "/time",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "StandardCommands",
+      "Item": "/weather",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "StandardCommands",
+      "Item": "/announce",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "StandardCommands",
+      "Item": "/status",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "StandardCommands",
+      "Item": "/players",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "StandardCommands",
+      "Item": "/give",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "StandardCommands",
+      "Item": "/setmoney",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "StandardCommands",
+      "Item": "/money",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "StandardCommands",
+      "Item": "/help",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "StandardCommands",
+      "Item": "/admin",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "StandardCommands",
+      "Item": "/restart",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "StandardCommands",
+      "Item": "Export AllCommands array",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "StandardCommands",
+      "Item": "Lignes suffisantes (450+)",
+      "Status": "FAIL",
+      "Detail": "(368 lignes)"
+    },
+    {
+      "Category": "AdminConsoleUI",
+      "Item": "onCommand callback",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleUI",
+      "Item": "Messages colorés",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleUI",
+      "Item": "Thème sombre",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleUI",
+      "Item": "Dark terminal style",
+      "Status": "FAIL",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleUI",
+      "Item": "Tailwind classes",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleUI",
+      "Item": "Minimize/Maximize",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleUI",
+      "Item": "useAdminConsole hook",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleUI",
+      "Item": "useRef",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleUI",
+      "Item": "Input field",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleUI",
+      "Item": "useEffect",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleUI",
+      "Item": "Touche: ArrowUp",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleUI",
+      "Item": "Touche: ArrowDown",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleUI",
+      "Item": "React import",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleUI",
+      "Item": "Auto-focus",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleUI",
+      "Item": "useState",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleUI",
+      "Item": "Scroll automatique",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleUI",
+      "Item": "isOpen state",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleUI",
+      "Item": "Touche: Enter",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleUI",
+      "Item": "Touche: Escape",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleUI",
+      "Item": "Lignes suffisantes (250+)",
+      "Status": "PASS",
+      "Detail": "(267 lignes)"
+    },
+    {
+      "Category": "CommandLogger",
+      "Item": "exportLogsCSV()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandLogger",
+      "Item": "Champ success",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandLogger",
+      "Item": "CommandLog interface",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandLogger",
+      "Item": "onCommandLogged callback",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandLogger",
+      "Item": "getRecentLogs()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandLogger",
+      "Item": "Champ timestamp",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandLogger",
+      "Item": "generateReport()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandLogger",
+      "Item": "getLogs()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandLogger",
+      "Item": "clearLogs()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandLogger",
+      "Item": "Champ adminId",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandLogger",
+      "Item": "getCommandLogs()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandLogger",
+      "Item": "Filtre par date",
+      "Status": "FAIL",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandLogger",
+      "Item": "getPlayerLogs()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandLogger",
+      "Item": "Limite 10000 logs",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandLogger",
+      "Item": "clearOldLogs()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandLogger",
+      "Item": "getAdminLogs()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandLogger",
+      "Item": "getStats()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandLogger",
+      "Item": "exportLogs() JSON",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandLogger",
+      "Item": "Champ target",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "CommandLogger",
+      "Item": "Lignes suffisantes (400+)",
+      "Status": "FAIL",
+      "Detail": "(292 lignes)"
+    },
+    {
+      "Category": "AdminConsoleManager",
+      "Item": "Import CommandParser",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleManager",
+      "Item": "Config: logToConsole",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleManager",
+      "Item": "Config: enableLogging",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleManager",
+      "Item": "Import CommandLogger",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleManager",
+      "Item": "executeCommand()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleManager",
+      "Item": "initializeAdmin()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleManager",
+      "Item": "getLogs()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleManager",
+      "Item": "generateReport()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleManager",
+      "Item": "setEnabled()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleManager",
+      "Item": "registerCustomCommand()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleManager",
+      "Item": "cleanupOldLogs()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleManager",
+      "Item": "getAvailableCommands()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleManager",
+      "Item": "onCommandLogged()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleManager",
+      "Item": "Config interface",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleManager",
+      "Item": "exportLogs()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleManager",
+      "Item": "getConsoleInfo()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleManager",
+      "Item": "getStats()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleManager",
+      "Item": "Import PermissionSystem",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleManager",
+      "Item": "hasPermission()",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "AdminConsoleManager",
+      "Item": "Lignes suffisantes (250+)",
+      "Status": "PASS",
+      "Detail": "(249 lignes)"
+    },
+    {
+      "Category": "Index",
+      "Item": "Export: CommandParser",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "Index",
+      "Item": "Export: CommandLogger",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "Index",
+      "Item": "Export: AdminConsoleManager",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "Index",
+      "Item": "Export: AdminConsoleUI",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "Index",
+      "Item": "Export: useAdminConsole",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "Index",
+      "Item": "Export: PermissionSystem",
+      "Status": "PASS",
+      "Detail": ""
+    },
+    {
+      "Category": "Index",
+      "Item": "Default export",
+      "Status": "PASS",
+      "Detail": ""
+    }
+  ],
+  "summary": {
+    "percentage": 94.2,
+    "passed": 131,
+    "failed": 8,
+    "total": 139
+  },
+  "date": "2026-06-10 18:59:00"
+}

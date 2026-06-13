@@ -92,7 +92,13 @@ export default function Terrain({ width = 400, depth = 2000, widthSegments = 40,
 
   return (
     <mesh geometry={geometry} receiveShadow>
-      <meshLambertMaterial vertexColors side={THREE.DoubleSide} />
+      <meshStandardMaterial
+        vertexColors
+        side={THREE.DoubleSide}
+        roughness={0.96}
+        metalness={0.0}
+        envMapIntensity={0.18}
+      />
     </mesh>
   );
 }

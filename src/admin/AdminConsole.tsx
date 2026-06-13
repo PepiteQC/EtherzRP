@@ -9,6 +9,7 @@ import {
 import EtherWorldEditor from './EtherWorld-Editor/EtherWorldEditor'
 import EtherWorldAgent from './EtherWorld-Agent/EtherWorldAgent'
 import WeatherSystemComplex from './WeatherSystemComplex'
+import { ObjectCreatorPanel } from './object-creator'
 import TransformToolbar from './TransformToolbar'
 import Crosshair from './Crosshair'
 import Keypad from './Keypad'
@@ -19,6 +20,7 @@ export type AdminTool =
   | 'editor' 
   | 'agent' 
   | 'weather' 
+  | 'objectCreator'
   | 'transform' 
   | 'catalog' 
   | 'client' 
@@ -73,6 +75,7 @@ export default function AdminConsole({
     { id: 'editor',    label: 'ÉDITEUR 3D',      icon: <Edit3 className="w-4 h-4" />,  color: '#ff00aa' },
     { id: 'agent',     label: 'AGENT IA',        icon: <Bot className="w-4 h-4" />,    color: '#a855f7' },
     { id: 'weather',   label: 'MÉTÉO COMPLEXE',  icon: <Cloud className="w-4 h-4" />,  color: '#3b82f6' },
+    { id: 'objectCreator', label: 'OBJECT CREATOR', icon: <Database className="w-4 h-4" />, color: '#8b5cf6' },
     { id: 'transform', label: 'TRANSFORM',       icon: <Zap className="w-4 h-4" />,    color: '#f59e0b' },
     { id: 'catalog',   label: 'CATALOGUE',       icon: <Database className="w-4 h-4" />, color: '#10b981' },
     { id: 'client',    label: 'CLIENT',          icon: <Users className="w-4 h-4" />,  color: '#ec4899' },
@@ -92,6 +95,8 @@ export default function AdminConsole({
         return <EtherWorldAgent context={{ weather: 'clear', entities: sceneStats.objects }} />
       case 'weather':
         return <WeatherSystemComplex preset="clear" advancedControls />
+      case 'objectCreator':
+        return <ObjectCreatorPanel />
       case 'transform':
         return <div className="p-8 text-center text-white/60">Transform Toolbar actif. Sélectionnez un objet dans la scène 3D.</div>
       case 'catalog':
