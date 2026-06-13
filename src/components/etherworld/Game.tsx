@@ -11,7 +11,7 @@ import Terrain from './Terrain'
 import Road from './Road'
 import Trees from './Trees'
 import Buildings from './Buildings'
-import QuebecCity from './QuebecCity'
+import QuebecCityEnhanced from './QuebecCityEnhanced'
 import Vehicle from './Vehicle'
 import Walker from './Walker'
 import Sky from './Sky'
@@ -20,6 +20,11 @@ import InteriorScene from './InteriorScene'
 import EtherWorldCity from './EtherWorldCity'
 import WorldBeef from './WorldBeef'
 import { CityRuntime } from '../world/city/CityRuntime'
+import { EtherPhysics, WorldPhysicsColliders } from './physics'
+import { InteractionKeyboardBridge, InteractionPrompt } from './interactions'
+import { GarageMenu, GarageZone } from './garage'
+import VehicleTrunkInventory from './vehicle/VehicleTrunkInventory'
+import { VolumetricCloud } from './weather'
 import { writeSave, type SaveData } from '../../hooks/useSaveSystem'
 import { getBuildingDoors, type DoorZone, type BuildingDef } from '../../data/quebecBuildings'
 import { startJob, getState as getGameState } from '../../store/gameState'
@@ -329,6 +334,7 @@ function Scene({
         targetZ={initVehiclePos[2]}
         ready={true}
       />
+      <InteractionKeyboardBridge />
 
       {/* ── Éclairage ── */}
       <ambientLight intensity={0.55} color="#b0c8e8" />
@@ -352,75 +358,86 @@ function Scene({
       {/* ✅ FIX brouillard: FOG_FAR < CAMERA_FAR = fondu doux */}
       <fog attach="fog" args={['#7aadda', FOG_NEAR, FOG_FAR]} />
 
-      {/* ── Environnement ── */}
-      <Sky />
-      <Terrain />
-      <Road />
-      <Trees />
-      <Buildings />
-      <QuebecCity />
+      {/* ── Environnement + couche physique Cannon ── */}
+      <EtherPhysics>
+        <WorldPhysicsColliders />
 
-      {/* ✅ FIX sol: plus large + plus long pour pas voir les bords */}
-      <mesh
-        position={[0, -0.1, 0]}
-        rotation={[-Math.PI / 2, 0, 0]}
-        receiveShadow
-        frustumCulled
-      >
-        <planeGeometry args={[1200, 2200]} />
-        <meshLambertMaterial color="#2a4a2a" />
-      </mesh>
+        <Sky />
+        {!IS_LOW_END && (
+          <>
+            <VolumetricCloud position={[0, 98, -430]} scale={[280, 82, 175]} opacity={0.18} steps={68} />
+            <VolumetricCloud position={[-220, 118, -180]} scale={[190, 62, 130]} opacity={0.13} threshold={0.29} steps={56} speed={0.032} />
+          </>
+        )}
+        <Terrain />
+        <Road />
+        <Trees />
+        <Buildings />
+        <QuebecCityEnhanced />
 
-      {/* ── EtherWorld City ── */}
-      <EtherWorldCity />
+        {/* ✅ FIX sol: plus large + plus long pour pas voir les bords */}
+        <mesh
+          position={[0, -0.1, 0]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          receiveShadow
+          frustumCulled
+        >
+          <planeGeometry args={[1200, 2200]} />
+          <meshLambertMaterial color="#2a4a2a" />
+        </mesh>
 
-      {/* ── BEEF CONNECTÉ: composants 3D secondaires branchés au monde principal */}
-      <WorldBeef />
+        {/* ── EtherWorld City ── */}
+        <EtherWorldCity />
 
-      {/* ── Runtime ville: branche CITY_BUILDINGS + MODEL_DEFS au monde EtherWorld */}
-      <group position={[0, 0, 900]}>
-        <CityRuntime />
-      </group>
+        {/* ── BEEF CONNECTÉ: composants 3D secondaires branchés au monde principal */}
+        <WorldBeef />
 
-      {/* ── Cinématique ── */}
-      {!cinematicDone && <CinematicIntro onComplete={onCinematicComplete} />}
+        {/* ── Runtime ville: branche CITY_BUILDINGS + MODEL_DEFS au monde EtherWorld */}
+        <group position={[0, 0, 900]}>
+          <CityRuntime />
+        </group>
 
-      {/* ── Véhicule ── */}
-      <Vehicle
-        active={mode === 'driving' && cinematicDone && !interior}
-        onSpeedChange={onSpeedChange}
-        onZoneChange={(_, pos) => handleZoneChange(pos?.z ?? vehicleWorldPos.current.z)}
-        onExitVehicle={handleExitVehicle}
-        worldPositionRef={vehicleWorldPos}
-        initialPosition={initVehiclePos}
-        initialRotationY={initVehicleRotY}
-        saveRef={vehicleSaveRef}
-      />
+        {/* ── Cinématique ── */}
+        {!cinematicDone && <CinematicIntro onComplete={onCinematicComplete} />}
 
-      {/* ── Piéton ── */}
-      {mode === 'walking' && cinematicDone && !interior && (
-        <Walker
-          startPosition={walkerStart}
+        {/* ── Véhicule ── */}
+        <Vehicle
+          active={mode === 'driving' && cinematicDone && !interior}
           onSpeedChange={onSpeedChange}
-          onZoneChange={(_, pos) => handleZoneChange(pos?.z ?? walkerSaveRef.current.z)}
-          onEnterVehicle={handleEnterVehicle}
-          vehiclePosition={vehicleWorldPos}
-          saveRef={walkerSaveRef}
-          buildingZones={BUILDING_ZONES}
-          onNearBuilding={onNearBuilding}
-          onInteractBuilding={handleInteractBuilding}
+          onZoneChange={(_, pos) => handleZoneChange(pos?.z ?? vehicleWorldPos.current.z)}
+          onExitVehicle={handleExitVehicle}
+          worldPositionRef={vehicleWorldPos}
+          initialPosition={initVehiclePos}
+          initialRotationY={initVehicleRotY}
+          saveRef={vehicleSaveRef}
         />
-      )}
+        <GarageZone vehiclePosition={vehicleWorldPos} />
 
-      {/* ── Intérieur ── */}
-      {interior && (
-        <InteriorScene
-          interiorId={interior.interiorId}
-          buildingJob={interior.job}
-          onExit={handleExitInterior}
-          onNearInteraction={handleInteriorPrompt}
-        />
-      )}
+        {/* ── Piéton ── */}
+        {mode === 'walking' && cinematicDone && !interior && (
+          <Walker
+            startPosition={walkerStart}
+            onSpeedChange={onSpeedChange}
+            onZoneChange={(_, pos) => handleZoneChange(pos?.z ?? walkerSaveRef.current.z)}
+            onEnterVehicle={handleEnterVehicle}
+            vehiclePosition={vehicleWorldPos}
+            saveRef={walkerSaveRef}
+            buildingZones={BUILDING_ZONES}
+            onNearBuilding={onNearBuilding}
+            onInteractBuilding={handleInteractBuilding}
+          />
+        )}
+
+        {/* ── Intérieur ── */}
+        {interior && (
+          <InteriorScene
+            interiorId={interior.interiorId}
+            buildingJob={interior.job}
+            onExit={handleExitInterior}
+            onNearInteraction={handleInteriorPrompt}
+          />
+        )}
+      </EtherPhysics>
     </>
   )
 }
@@ -469,7 +486,8 @@ export default function Game({
   // ✅ FIX: canvas créé avec position par défaut seulement
   // La vraie position est gérée par CameraInitializer à l'intérieur
   return (
-    <KeyboardControls map={keyMap}>
+    <>
+      <KeyboardControls map={keyMap}>
       <Canvas
         camera={{
           position: [0, 5, DEFAULT_SPAWN[2] + 15],
@@ -504,5 +522,9 @@ export default function Game({
         />
       </Canvas>
     </KeyboardControls>
+    <InteractionPrompt />
+    <GarageMenu />
+    <VehicleTrunkInventory />
+    </>
   )
 }
