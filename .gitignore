@@ -1,3 +1,6 @@
+# ─────────────────────────────────────────────
+# Local editors / OS
+# ─────────────────────────────────────────────
 .claude/
 .DS_Store
 .idea/
@@ -5,10 +8,33 @@
 .puppeteer_profile/
 .vs/
 .vscode/
-
 *.swp
-npm-debug.log
 
+# ─────────────────────────────────────────────
+# Environment files — never commit secrets/local config
+# ─────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ─────────────────────────────────────────────
+# Dependencies / logs
+# ─────────────────────────────────────────────
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ─────────────────────────────────────────────
+# Build output
+# ─────────────────────────────────────────────
+dist/
+
+# ─────────────────────────────────────────────
+# Test / generated artifacts
+# ─────────────────────────────────────────────
 test/e2e/chromium
 test/e2e/output-screenshots
 test/treeshake/index.bundle.js
@@ -18,9 +44,3 @@ test/treeshake/index.webgpu.bundle.min.js
 test/treeshake/index.webgpu.nodes.bundle.js
 test/treeshake/index.webgpu.nodes.bundle.min.js
 test/unit/build
-
-**/node_modules
-
-dist/
-
-dist/
