@@ -5,10 +5,10 @@ import {
   Users, Shield, Zap, Play, Pause 
 } from 'lucide-react'
 
-// Sub Admin Tools (from Real-shit - enriched)
+// Sub Admin Tools
 import EtherWorldEditor from './EtherWorld-Editor/EtherWorldEditor'
 import EtherWorldAgent from './EtherWorld-Agent/EtherWorldAgent'
-import WeatherSystemComplex from './Weather-System-Complex/WeatherSystemComplex'
+import WeatherSystemComplex from './WeatherSystemComplex'
 import TransformToolbar from './TransformToolbar'
 import Crosshair from './Crosshair'
 import Keypad from './Keypad'
@@ -49,15 +49,12 @@ export default function AdminConsole({
     memory: 184
   })
 
-  // Sync with parent
   useEffect(() => {
     if (activeTool) setCurrentTab(activeTool)
   }, [activeTool])
 
-  // Live stats (enriched simulation)
   useEffect(() => {
     if (!isOpen || isPaused) return
-
     const interval = setInterval(() => {
       setSceneStats(prev => ({
         objects: Math.max(800, Math.min(2800, prev.objects + Math.floor((Math.random() - 0.5) * 14))),
@@ -68,19 +65,18 @@ export default function AdminConsole({
         memory: Math.max(120, Math.min(290, prev.memory + Math.floor((Math.random() - 0.5) * 5)))
       }))
     }, 900)
-
     return () => clearInterval(interval)
   }, [isOpen, isPaused])
 
   const tabs: { id: AdminTool; label: string; icon: React.ReactNode; color: string }[] = [
-    { id: 'stats', label: 'STATISTIQUES', icon: <Target className="w-4 h-4" />, color: '#00f5ff' },
-    { id: 'editor', label: 'ÉDITEUR 3D', icon: <Edit3 className="w-4 h-4" />, color: '#ff00aa' },
-    { id: 'agent', label: 'AGENT IA', icon: <Bot className="w-4 h-4" />, color: '#a855f7' },
-    { id: 'weather', label: 'MÉTÉO COMPLEXE', icon: <Cloud className="w-4 h-4" />, color: '#3b82f6' },
-    { id: 'transform', label: 'TRANSFORM', icon: <Zap className="w-4 h-4" />, color: '#f59e0b' },
-    { id: 'catalog', label: 'CATALOGUE', icon: <Database className="w-4 h-4" />, color: '#10b981' },
-    { id: 'client', label: 'CLIENT', icon: <Users className="w-4 h-4" />, color: '#ec4899' },
-    { id: 'core', label: 'CORE', icon: <Shield className="w-4 h-4" />, color: '#8b5cf6' },
+    { id: 'stats',     label: 'STATISTIQUES',   icon: <Target className="w-4 h-4" />, color: '#00f5ff' },
+    { id: 'editor',    label: 'ÉDITEUR 3D',      icon: <Edit3 className="w-4 h-4" />,  color: '#ff00aa' },
+    { id: 'agent',     label: 'AGENT IA',        icon: <Bot className="w-4 h-4" />,    color: '#a855f7' },
+    { id: 'weather',   label: 'MÉTÉO COMPLEXE',  icon: <Cloud className="w-4 h-4" />,  color: '#3b82f6' },
+    { id: 'transform', label: 'TRANSFORM',       icon: <Zap className="w-4 h-4" />,    color: '#f59e0b' },
+    { id: 'catalog',   label: 'CATALOGUE',       icon: <Database className="w-4 h-4" />, color: '#10b981' },
+    { id: 'client',    label: 'CLIENT',          icon: <Users className="w-4 h-4" />,  color: '#ec4899' },
+    { id: 'core',      label: 'CORE',            icon: <Shield className="w-4 h-4" />, color: '#8b5cf6' },
   ]
 
   const handleTabClick = (tab: AdminTool) => {
@@ -92,16 +88,12 @@ export default function AdminConsole({
     switch (currentTab) {
       case 'editor':
         return <EtherWorldEditor />
-      
       case 'agent':
         return <EtherWorldAgent context={{ weather: 'clear', entities: sceneStats.objects }} />
-      
       case 'weather':
         return <WeatherSystemComplex preset="clear" advancedControls />
-      
       case 'transform':
         return <div className="p-8 text-center text-white/60">Transform Toolbar actif. Sélectionnez un objet dans la scène 3D.</div>
-      
       case 'catalog':
         return (
           <div className="grid grid-cols-3 gap-4 p-6">
@@ -113,13 +105,10 @@ export default function AdminConsole({
             ))}
           </div>
         )
-      
       case 'client':
         return <div className="p-8">Client Multiplayer • 14 connexions • Ping: 28ms</div>
-      
       case 'core':
         return <div className="p-8">Core Systems Status: Physics, Rendering, AI, Audio → Tous OK</div>
-      
       default:
         return (
           <div className="p-8">
@@ -133,7 +122,6 @@ export default function AdminConsole({
                 {isPaused ? 'Reprendre' : 'Pause'}
               </button>
             </div>
-
             <div className="grid grid-cols-3 gap-4">
               {Object.entries(sceneStats).map(([key, value]) => (
                 <div key={key} className="glass-panel p-5">
