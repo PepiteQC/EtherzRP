@@ -1,12 +1,28 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  Bot, Send, User, Wallet, MapPin, Activity, 
-  Sparkles, Play, ShieldAlert, Cloud, HelpCircle,
-  Terminal, Server, CircleDot, Cpu, Compass
+import {
+  Activity,
+  Bot,
+  Building2,
+  ChevronRight,
+  CircleDot,
+  Compass,
+  Cpu,
+  DoorOpen,
+  Gauge,
+  Hotel,
+  MapPin,
+  Play,
+  Plus,
+  ShieldCheck,
+  Sparkles,
+  Store,
+  User,
+  Wallet,
+  Wand2,
 } from 'lucide-react'
 import type { SaveData } from '../../hooks/useSaveSystem'
-import { saveCharacterProfile, type EtherworldCharacterProfile } from './characterProfile'
+import { loadCharacterProfile, saveCharacterProfile, type EtherworldCharacterProfile } from './characterProfile'
 import EtherworldDashboardScene from './EtherworldDashboardScene'
 import { useAgentStore } from '@/admin/EtherWorld-Agent/useAgentStore'
 
@@ -21,6 +37,7 @@ interface EtherworldDashboardProps {
 }
 
 const ORIGINS: EtherworldCharacterProfile['origin'][] = ['Portneuf', 'Québec', 'Trois-Rivières', 'Côte-Nord', 'Montréal', 'Autre']
+
 const STYLES: Array<{ id: EtherworldCharacterProfile['style']; label: string }> = [
   { id: 'civil', label: 'Civil' },
   { id: 'travailleur', label: 'Travailleur' },
@@ -29,10 +46,45 @@ const STYLES: Array<{ id: EtherworldCharacterProfile['style']; label: string }> 
   { id: 'mecano', label: 'Mécano' },
 ]
 
-interface Message {
-  sender: 'ai' | 'user'
-  text: string
-  timestamp: string
+const OPERATIONS = [
+  {
+    id: 'hotel',
+    title: 'Hôtel EtherWorld',
+    subtitle: '30 chambres · portes · locks · accès staff',
+    icon: Hotel,
+    tone: 'from-violet-500/20 to-cyan-500/10 border-violet-400/25',
+  },
+  {
+    id: 'store',
+    title: 'Dépanneur RP',
+    subtitle: 'stockage · ventes · sécurité · livraisons',
+    icon: Store,
+    tone: 'from-emerald-500/20 to-cyan-500/10 border-emerald-400/25',
+  },
+  {
+    id: 'security',
+    title: 'Sécurité bâtiments',
+    subtitle: 'journal immuable · permissions · statuts archivés',
+    icon: ShieldCheck,
+    tone: 'from-amber-500/20 to-rose-500/10 border-amber-400/25',
+  },
+]
+
+function StatCard({ label, value, detail, icon: Icon }: { label: string; value: string; detail: string; icon: React.ElementType }) {
+  return (
+    <div className="rounded-3xl border border-white/10 bg-white/[0.055] p-4 shadow-2xl shadow-black/20 backdrop-blur-md">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/40">{label}</p>
+          <p className="mt-2 text-2xl font-black tracking-tight text-white">{value}</p>
+        </div>
+        <div className="rounded-2xl border border-cyan-400/20 bg-cyan-400/10 p-2 text-cyan-300">
+          <Icon className="h-4 w-4" />
+        </div>
+      </div>
+      <p className="mt-3 text-xs leading-relaxed text-white/50">{detail}</p>
+    </div>
+  )
 }
 
 export default function EtherworldDashboard({
@@ -48,439 +100,254 @@ export default function EtherworldDashboard({
   const [name, setName] = useState('')
   const [origin, setOrigin] = useState<EtherworldCharacterProfile['origin']>('Portneuf')
   const [style, setStyle] = useState<EtherworldCharacterProfile['style']>('civil')
-  
-  // Agent State
-  const [chatInput, setChatInput] = useState('')
+
   const { activeAgents, spawnAgent } = useAgentStore()
-  const chatEndRef = useRef<HTMLDivElement>(null)
 
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      sender: 'ai',
-      text: 'Console d\'Agent EtherWorld v2.5 opérationnelle. Je suis prêt à recevoir vos commandes de simulation (climat, anomalies, déploiement d\'agents).',
-      timestamp: new Date().toLocaleTimeString('fr-CA', { hour: '2-digit', minute: '2-digit' })
-    }
-  ])
-
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  const profile = useMemo(() => loadCharacterProfile(ownerId), [ownerId, creatorOpen, hasCharacter])
+  const money = (savedGame?.money ?? 2500).toLocaleString('fr-CA')
+  const lastZone = savedGame?.zone ?? 'Québec — Route 138 Ouest'
 
   const handleCreate = () => {
     const cleanName = name.trim() || 'Citoyen EtherWorld'
-    const profile = saveCharacterProfile(ownerId, { name: cleanName, origin, style })
-    onCharacterCreated(profile)
+    const createdProfile = saveCharacterProfile(ownerId, { name: cleanName, origin, style })
+    onCharacterCreated(createdProfile)
     setCreatorOpen(false)
   }
 
-  const handleSendMessage = (text: string) => {
-    if (!text.trim()) return
-    
-    const timeStr = new Date().toLocaleTimeString('fr-CA', { hour: '2-digit', minute: '2-digit' })
-    
-    // Ajout du message utilisateur
-    setMessages(prev => [...prev, { sender: 'user', text, timestamp: timeStr }])
-    
-    const cmd = text.toLowerCase()
-    let reply = ''
-    
-    if (cmd.includes('pluie') || cmd.includes('rain')) {
-      window.dispatchEvent(new CustomEvent('set-weather', { detail: { preset: 'rain' } }))
-      reply = 'Modification climatique en cours : Activation de la pluie sur la ville. 🌧'
-    } else if (cmd.includes('neige') || cmd.includes('snow')) {
-      window.dispatchEvent(new CustomEvent('set-weather', { detail: { preset: 'snow' } }))
-      reply = 'Modification climatique en cours : Déclenchement de la neige. ❄'
-    } else if (cmd.includes('beau') || cmd.includes('clear') || cmd.includes('soleil') || cmd.includes('jour')) {
-      window.dispatchEvent(new CustomEvent('set-weather', { detail: { preset: 'clear' } }))
-      reply = 'Modification climatique en cours : Retour des conditions claires et ensoleillées. ☀'
-    } else if (cmd.includes('brouillard') || cmd.includes('fog')) {
-      window.dispatchEvent(new CustomEvent('set-weather', { detail: { preset: 'fog' } }))
-      reply = 'Modification climatique en cours : Lancement du brouillard dense. 🌫'
-    } else if (cmd.includes('spawn') || cmd.includes('agent')) {
-      const match = cmd.match(/\d+/)
-      const count = match ? parseInt(match[0]) : 1
-      for (let i = 0; i < count; i++) {
-        spawnAgent({
-          type: 'explorer',
-          position: [(Math.random() - 0.5) * 80, 5, 900 + (Math.random() - 0.5) * 80],
-          status: 'exploring',
-          energy: Math.floor(Math.random() * 30) + 70
-        })
-      }
-      reply = `Déploiement réseau réussi : ${count} agent(s) explorateur(s) actif(s) sur le serveur. 🤖`
-    } else if (cmd.includes('explosion') || cmd.includes('arcane')) {
-      window.dispatchEvent(new CustomEvent('arcane-tree-explosion'))
-      reply = 'ALERTE RÉSEAU : Onde d\'énergie libérée ! Déclenchement immédiat de l\'explosion de l\'arbre d\'arcane ! 💥'
-    } else {
-      reply = 'Commande non reconnue par le protocole. Essayez : "fais pleuvoir", "fais neiger", "beau temps", "spawn 3 agents" ou "arcane explosion".'
-    }
-    
-    setTimeout(() => {
-      setMessages(prev => [...prev, {
-        sender: 'ai',
-        text: reply,
-        timestamp: new Date().toLocaleTimeString('fr-CA', { hour: '2-digit', minute: '2-digit' })
-      }])
-    }, 500)
-  }
-
-  const submitChat = () => {
-    if (!chatInput.trim()) return
-    handleSendMessage(chatInput)
-    setChatInput('')
+  const deployExpertAgent = () => {
+    spawnAgent({
+      type: 'explorer',
+      position: [(Math.random() - 0.5) * 80, 5, 900 + (Math.random() - 0.5) * 80],
+      status: 'exploring',
+      energy: Math.floor(Math.random() * 30) + 70,
+    })
   }
 
   return (
-    <div className="absolute inset-0 z-10 overflow-hidden bg-[#050711] text-white flex flex-col font-sans select-none">
-      {/* 3D Scene Background */}
+    <div className="absolute inset-0 z-10 overflow-hidden bg-[#040713] text-white font-sans selection:bg-cyan-400/30">
       <EtherworldDashboardScene />
-      
-      {/* Top Header Menu */}
-      <header className="relative w-full h-16 flex items-center justify-between px-8 z-20 bg-gradient-to-b from-[#050711]/90 to-transparent">
-        <div className="flex items-center gap-3">
-          <div className="text-2xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-300 to-indigo-400">
-            ETHERWORLD <span className="text-xs font-bold px-2 py-0.5 rounded border border-cyan-500/30 text-cyan-400 bg-cyan-950/40">V5.0</span>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(34,211,238,0.20),transparent_34%),radial-gradient(circle_at_70%_0%,rgba(139,92,246,0.24),transparent_38%),linear-gradient(180deg,rgba(2,6,23,0.30),rgba(2,6,23,0.92))]" />
+
+      <header className="relative z-20 flex h-20 items-center justify-between border-b border-white/10 bg-slate-950/45 px-6 backdrop-blur-xl lg:px-10">
+        <div className="flex items-center gap-4">
+          <div className="grid h-11 w-11 place-items-center rounded-2xl border border-cyan-400/25 bg-cyan-400/10 shadow-[0_0_40px_rgba(34,211,238,0.12)]">
+            <Building2 className="h-5 w-5 text-cyan-300" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg font-black tracking-[0.22em] text-white">ETHERWORLD</h1>
+              <span className="rounded-full border border-violet-400/30 bg-violet-400/10 px-2 py-0.5 text-[10px] font-black text-violet-200">RP QC</span>
+            </div>
+            <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-white/40">Centre expert · Agent · Bâtiments · Ville</p>
           </div>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/60 border border-slate-800 text-xs text-emerald-400">
-            <CircleDot className="w-3.5 h-3.5 animate-pulse" />
-            <span>Serveur Actif</span>
+
+        <div className="flex items-center gap-3">
+          <div className="hidden items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5 text-xs font-bold text-emerald-300 md:flex">
+            <CircleDot className="h-3.5 w-3.5 animate-pulse" />
+            Serveur actif
           </div>
           {isOwner && (
-            <button 
+            <button
               onClick={onOpenObjectCreator}
-              className="px-4 py-1.5 rounded-full bg-indigo-500/20 border border-indigo-500/40 text-xs font-bold text-indigo-300 hover:bg-indigo-500/35 transition cursor-pointer"
+              className="rounded-full border border-indigo-400/35 bg-indigo-400/10 px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-indigo-200 transition hover:bg-indigo-400/20"
             >
-              ÉDITEUR D'OBJETS
+              Éditeur d'objets
             </button>
           )}
         </div>
       </header>
 
-      {/* Main Layout Area */}
-      <main className="relative flex-1 flex flex-col lg:flex-row gap-6 p-6 lg:p-8 z-10 items-stretch justify-between overflow-hidden">
-        
-        {/* Left Info Panel */}
-        <div className="flex flex-col gap-5 w-full lg:w-96 justify-between pointer-events-auto">
-          {/* Server Info Card */}
-          <div className="backdrop-blur-md bg-slate-950/65 border border-slate-800/80 rounded-3xl p-5 shadow-2xl flex flex-col gap-4">
-            <div className="flex items-center gap-2 text-cyan-400 text-sm font-bold tracking-wider uppercase">
-              <Server className="w-4.5 h-4.5" />
-              <span>Statistiques Live</span>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 rounded-2xl bg-white/5 border border-white/5 flex flex-col gap-1">
-                <span className="text-white/40 text-[10px] uppercase tracking-wider">Citoyens RP</span>
-                <span className="text-lg font-bold">12 847</span>
-              </div>
-              <div className="p-3 rounded-2xl bg-white/5 border border-white/5 flex flex-col gap-1">
-                <span className="text-white/40 text-[10px] uppercase tracking-wider">Agents Actifs</span>
-                <span className="text-lg font-bold text-cyan-400">{activeAgents.length}</span>
-              </div>
-              <div className="p-3 rounded-2xl bg-white/5 border border-white/5 flex flex-col gap-1">
-                <span className="text-white/40 text-[10px] uppercase tracking-wider">Zone principale</span>
-                <span className="text-xs font-semibold text-white/90 truncate">Route 138 / Québec</span>
-              </div>
-              <div className="p-3 rounded-2xl bg-white/5 border border-white/5 flex flex-col gap-1">
-                <span className="text-white/40 text-[10px] uppercase tracking-wider">Statut</span>
-                <span className="text-xs font-semibold text-emerald-400">15ms latency</span>
-              </div>
+      <main className="relative z-10 grid h-[calc(100vh-5rem)] gap-5 overflow-y-auto p-5 lg:grid-cols-[1.1fr_0.9fr] lg:p-8 xl:grid-cols-[1.25fr_0.75fr]">
+        <section className="flex min-h-0 flex-col gap-5">
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45 }}
+            className="rounded-[2rem] border border-white/10 bg-slate-950/62 p-6 shadow-2xl shadow-black/30 backdrop-blur-xl lg:p-8"
+          >
+            <div className="mb-5 flex flex-wrap items-center gap-2">
+              <span className="rounded-full border border-cyan-400/25 bg-cyan-400/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-200">Dashboard expert</span>
+              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">Inspiré SaaS / v0</span>
+              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">Sans Kinect Demo</span>
             </div>
 
-            {/* List of Simulated Agents */}
-            <div className="flex flex-col gap-2 mt-2">
-              <span className="text-white/40 text-[10px] uppercase tracking-wider flex items-center gap-1.5">
-                <Compass className="w-3.5 h-3.5" />
-                <span>Rapport des Agents sur le terrain</span>
-              </span>
-              <div className="max-h-28 overflow-y-auto pr-1 flex flex-col gap-1.5 text-xs font-mono text-white/70">
-                {activeAgents.length === 0 ? (
-                  <div className="text-white/30 italic p-1 bg-white/2 rounded">Aucun agent autonome déployé. Utilisez la console à droite pour en invoquer.</div>
-                ) : (
-                  activeAgents.map((agent) => (
-                    <div key={agent.id} className="flex justify-between items-center bg-white/5 border border-white/5 p-2 rounded-xl">
-                      <span className="text-cyan-400 flex items-center gap-1">
-                        <Cpu className="w-3 h-3" />
-                        {agent.id.slice(0, 9)}
-                      </span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] bg-cyan-500/10 text-cyan-300">
-                        {agent.status} ({agent.energy}%)
-                      </span>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Info & Credits */}
-          <div className="hidden lg:flex backdrop-blur-md bg-slate-950/40 border border-slate-900/60 rounded-3xl p-5 flex-col gap-2 text-xs text-white/50">
-            <div className="font-bold text-white/70 flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-yellow-400" />
-              Projet Unique : EtherWorld RP
-            </div>
-            <p className="leading-relaxed">
-              Explorez la ville d'EtherWorld et les tronçons de la Route 138 du Québec en voiture ou à pied. Contrôlez l'environnement à l'aide de l'Agent IA.
+            <h2 className="max-w-4xl text-4xl font-black leading-[0.95] tracking-[-0.06em] text-white md:text-6xl xl:text-7xl">
+              Centre de contrôle RP Québec pour lancer, surveiller et bâtir EtherWorld.
+            </h2>
+            <p className="mt-5 max-w-3xl text-sm leading-7 text-white/58 md:text-base">
+              Une seule entrée propre : profil joueur, lancement ville, agent IA, bâtiments, hôtel, dépanneur et sécurité. L'ancien esprit “démo” est retiré; cette page devient la vraie base premium du projet.
             </p>
-          </div>
-        </div>
 
-        {/* Right Dashboard Container: Player + AI Agent Panel */}
-        <div className="flex-1 max-w-2xl w-full flex flex-col gap-5 justify-between pointer-events-auto">
-          
-          {/* Identity & Launch Controls */}
-          <div className="backdrop-blur-md bg-slate-950/65 border border-slate-800/80 rounded-3xl p-5 shadow-2xl flex flex-col gap-4">
-            
+            <div className="mt-7 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <StatCard label="Capital" value={`${money}$`} detail="État sauvegardé ou démarrage civil." icon={Wallet} />
+              <StatCard label="Zone" value="Route 138" detail={lastZone} icon={MapPin} />
+              <StatCard label="Agents" value={String(activeAgents.length)} detail="Agents IA terrain actifs." icon={Bot} />
+              <StatCard label="Bâtiments" value="2+" detail="Hôtel + dépanneur prêts à brancher." icon={DoorOpen} />
+            </div>
+          </motion.div>
+
+          <div className="grid gap-5 xl:grid-cols-3">
+            {OPERATIONS.map((item) => {
+              const Icon = item.icon
+              return (
+                <article key={item.id} className={`rounded-[1.7rem] border bg-gradient-to-br ${item.tone} p-5 shadow-2xl shadow-black/20 backdrop-blur-xl`}>
+                  <div className="mb-5 flex items-start justify-between gap-3">
+                    <div className="grid h-11 w-11 place-items-center rounded-2xl border border-white/10 bg-black/20">
+                      <Icon className="h-5 w-5 text-white" />
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-white/30" />
+                  </div>
+                  <h3 className="text-lg font-black tracking-tight">{item.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-white/55">{item.subtitle}</p>
+                </article>
+              )
+            })}
+          </div>
+
+          <section className="rounded-[2rem] border border-white/10 bg-slate-950/62 p-5 shadow-2xl shadow-black/25 backdrop-blur-xl">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-300">Agents terrain</p>
+                <h3 className="mt-1 text-xl font-black">Console IA opérationnelle</h3>
+              </div>
+              <button onClick={deployExpertAgent} className="rounded-2xl border border-cyan-400/25 bg-cyan-400/10 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-cyan-200 transition hover:bg-cyan-400/20">
+                Déployer agent
+              </button>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {activeAgents.length === 0 ? (
+                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-sm text-white/45 xl:col-span-3">
+                  Aucun agent autonome déployé. Clique sur “Déployer agent” pour tester la couche EtherWorld-Agent dans le dashboard principal.
+                </div>
+              ) : (
+                activeAgents.slice(0, 6).map((agent) => (
+                  <div key={agent.id} className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="flex items-center gap-2 font-mono text-xs text-cyan-300"><Cpu className="h-3.5 w-3.5" />{agent.id.slice(0, 10)}</span>
+                      <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2 py-0.5 text-[10px] text-emerald-300">{agent.energy}%</span>
+                    </div>
+                    <p className="mt-2 text-xs uppercase tracking-[0.18em] text-white/40">{agent.status}</p>
+                  </div>
+                ))
+              )}
+            </div>
+          </section>
+        </section>
+
+        <aside className="flex min-h-0 flex-col gap-5">
+          <section className="rounded-[2rem] border border-white/10 bg-slate-950/70 p-5 shadow-2xl shadow-black/30 backdrop-blur-xl">
             <AnimatePresence mode="wait">
               {creatorOpen ? (
-                // Character Creation Panel
-                <motion.div 
-                  key="char-creator"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="flex flex-col gap-3"
-                >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <span className="text-[10px] tracking-wider text-cyan-400 font-bold uppercase">Création de Citoyen</span>
-                      <h2 className="text-xl font-bold">Nouveau Personnage RP</h2>
-                    </div>
-                    {hasCharacter && (
-                      <button onClick={() => setCreatorOpen(false)} className="text-white/40 hover:text-white text-xs">Annuler</button>
-                    )}
+                <motion.div key="creator" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-4">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-300">Création citoyen</p>
+                    <h3 className="mt-1 text-2xl font-black">Identité RP</h3>
+                    <p className="mt-2 text-sm leading-6 text-white/50">Crée le profil avant d'entrer dans la ville.</p>
                   </div>
-                  
-                  <div className="flex flex-col gap-3.5 mt-2">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[10px] uppercase text-white/50 tracking-wider font-bold">Nom et Prénom</label>
-                      <input 
-                        className="bg-slate-900/85 border border-slate-800 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-cyan-500/60 transition text-white" 
-                        value={name}
-                        onChange={e => setName(e.target.value)}
-                        placeholder="Ex: Maxime Tremblay"
-                        maxLength={32}
-                      />
-                    </div>
 
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[10px] uppercase text-white/50 tracking-wider font-bold">Origine</label>
-                      <div className="flex flex-wrap gap-2">
-                        {ORIGINS.map(o => (
-                          <button 
-                            key={o} 
-                            onClick={() => setOrigin(o)}
-                            className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition cursor-pointer ${
-                              origin === o 
-                                ? 'bg-cyan-500/20 border-cyan-400 text-cyan-200' 
-                                : 'bg-slate-900/60 border-slate-800 text-white/60 hover:border-slate-700 hover:text-white'
-                            }`}
-                          >
-                            {o}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                  <label className="block space-y-2">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/45">Nom</span>
+                    <input
+                      className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-cyan-400/50"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Ex: Maxime Tremblay"
+                      maxLength={32}
+                    />
+                  </label>
 
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[10px] uppercase text-white/50 tracking-wider font-bold">Métier d'origine</label>
-                      <div className="flex flex-wrap gap-2">
-                        {STYLES.map(s => (
-                          <button 
-                            key={s.id} 
-                            onClick={() => setStyle(s.id)}
-                            className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition cursor-pointer ${
-                              style === s.id 
-                                ? 'bg-cyan-500/20 border-cyan-400 text-cyan-200' 
-                                : 'bg-slate-900/60 border-slate-800 text-white/60 hover:border-slate-700 hover:text-white'
-                            }`}
-                          >
-                            {s.label}
-                          </button>
-                        ))}
-                      </div>
+                  <div className="space-y-2">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/45">Origine</span>
+                    <div className="flex flex-wrap gap-2">
+                      {ORIGINS.map((item) => (
+                        <button key={item} onClick={() => setOrigin(item)} className={`rounded-full border px-3 py-1.5 text-xs font-bold transition ${origin === item ? 'border-cyan-300 bg-cyan-400/15 text-cyan-100' : 'border-white/10 bg-white/[0.04] text-white/55 hover:text-white'}`}>{item}</button>
+                      ))}
                     </div>
-
-                    <button 
-                      onClick={handleCreate}
-                      className="w-full mt-2 py-3 rounded-2xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold tracking-wider hover:opacity-90 transition cursor-pointer uppercase text-xs"
-                    >
-                      Enregistrer le personnage
-                    </button>
                   </div>
+
+                  <div className="space-y-2">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/45">Métier d'origine</span>
+                    <div className="flex flex-wrap gap-2">
+                      {STYLES.map((item) => (
+                        <button key={item.id} onClick={() => setStyle(item.id)} className={`rounded-full border px-3 py-1.5 text-xs font-bold transition ${style === item.id ? 'border-violet-300 bg-violet-400/15 text-violet-100' : 'border-white/10 bg-white/[0.04] text-white/55 hover:text-white'}`}>{item.label}</button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button onClick={handleCreate} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-500 px-5 py-4 text-sm font-black uppercase tracking-[0.18em] text-white shadow-2xl shadow-cyan-500/15 transition hover:scale-[1.01]">
+                    <Plus className="h-4 w-4" /> Enregistrer le personnage
+                  </button>
                 </motion.div>
               ) : (
-                // Player Info Panel & Join Game
-                <motion.div 
-                  key="play-panel"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="flex flex-col gap-4"
-                >
-                  <div className="flex justify-between items-center">
+                <motion.div key="player" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-5">
+                  <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-500 flex items-center justify-center text-white shadow-lg shadow-cyan-500/10">
-                        <User className="w-6 h-6" />
+                      <div className="grid h-14 w-14 place-items-center rounded-3xl bg-gradient-to-br from-cyan-400 to-violet-500 shadow-2xl shadow-cyan-500/20">
+                        <User className="h-6 w-6" />
                       </div>
                       <div>
-                        <div className="text-[10px] tracking-wider text-cyan-400 font-bold uppercase">Compte RP actif</div>
-                        <h2 className="text-lg font-bold">{loadCharacterProfile(ownerId)?.name || 'Citoyen'}</h2>
+                        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-300">Compte RP actif</p>
+                        <h3 className="text-xl font-black">{profile?.name || 'Citoyen EtherWorld'}</h3>
                       </div>
                     </div>
-                    <button 
-                      onClick={() => setCreatorOpen(true)}
-                      className="text-xs text-white/40 hover:text-cyan-400 transition cursor-pointer"
-                    >
-                      Modifier profil
-                    </button>
+                    <button onClick={() => setCreatorOpen(true)} className="text-xs font-bold text-white/35 transition hover:text-cyan-300">Modifier</button>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2 py-2">
-                    <div className="bg-slate-900/40 border border-slate-900 rounded-2xl p-3 flex flex-col gap-1">
-                      <span className="text-[10px] text-white/40 uppercase font-bold tracking-wider flex items-center gap-1">
-                        <MapPin className="w-3.5 h-3.5" /> Origine
-                      </span>
-                      <span className="text-xs font-semibold text-white/90">{loadCharacterProfile(ownerId)?.origin || 'Non défini'}</span>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+                      <MapPin className="mb-2 h-4 w-4 text-cyan-300" />
+                      <p className="text-[10px] uppercase tracking-[0.16em] text-white/35">Origine</p>
+                      <p className="mt-1 truncate text-xs font-bold">{profile?.origin || 'Non défini'}</p>
                     </div>
-                    <div className="bg-slate-900/40 border border-slate-900 rounded-2xl p-3 flex flex-col gap-1">
-                      <span className="text-[10px] text-white/40 uppercase font-bold tracking-wider flex items-center gap-1">
-                        <Activity className="w-3.5 h-3.5" /> Spécialité
-                      </span>
-                      <span className="text-xs font-semibold text-white/90 capitalize">{loadCharacterProfile(ownerId)?.style || 'Non défini'}</span>
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+                      <Activity className="mb-2 h-4 w-4 text-violet-300" />
+                      <p className="text-[10px] uppercase tracking-[0.16em] text-white/35">Style</p>
+                      <p className="mt-1 truncate text-xs font-bold capitalize">{profile?.style || 'civil'}</p>
                     </div>
-                    <div className="bg-slate-900/40 border border-slate-900 rounded-2xl p-3 flex flex-col gap-1">
-                      <span className="text-[10px] text-white/40 uppercase font-bold tracking-wider flex items-center gap-1">
-                        <Wallet className="w-3.5 h-3.5" /> Capital
-                      </span>
-                      <span className="text-xs font-semibold text-emerald-400">{(savedGame?.money ?? 2500).toLocaleString('fr-CA')}$</span>
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+                      <Gauge className="mb-2 h-4 w-4 text-emerald-300" />
+                      <p className="text-[10px] uppercase tracking-[0.16em] text-white/35">Save</p>
+                      <p className="mt-1 truncate text-xs font-bold">{savedGame ? 'Active' : 'Nouvelle'}</p>
                     </div>
                   </div>
 
-                  {/* Main Single Join Button */}
-                  <div className="flex flex-col gap-2 mt-2">
-                    <button 
-                      onClick={onJoin}
-                      className="group w-full py-4 rounded-2xl bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-600 text-white font-black tracking-widest text-sm hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:scale-[1.01] transition duration-200 cursor-pointer flex items-center justify-center gap-2 uppercase shadow-lg shadow-cyan-500/10"
-                    >
-                      <Play className="w-4 h-4 fill-current group-hover:translate-x-0.5 transition" />
-                      <span>Rejoindre la Ville RP (EtherWorld)</span>
-                    </button>
-                    {savedGame && (
-                      <div className="text-center text-[10px] text-white/40 tracking-wider">
-                        Reprendre la partie sauvegardée · {savedGame.zone ?? 'Route 138'}
-                      </div>
-                    )}
-                  </div>
+                  <button onClick={onJoin} className="group flex w-full items-center justify-center gap-3 rounded-[1.4rem] bg-gradient-to-r from-blue-500 via-cyan-500 to-violet-600 px-5 py-5 text-sm font-black uppercase tracking-[0.18em] text-white shadow-2xl shadow-cyan-500/20 transition hover:scale-[1.01] hover:shadow-cyan-500/35">
+                    <Play className="h-4 w-4 fill-current transition group-hover:translate-x-1" />
+                    Rejoindre EtherWorld RP
+                  </button>
+                  {savedGame && <p className="text-center text-[10px] uppercase tracking-[0.18em] text-white/35">Reprendre · {savedGame.zone ?? 'Route 138'}</p>}
                 </motion.div>
               )}
             </AnimatePresence>
+          </section>
 
-          </div>
-
-          {/* Etherworld Agent AI Chat Console */}
-          <div className="backdrop-blur-md bg-slate-950/65 border border-slate-800/80 rounded-3xl p-5 shadow-2xl flex flex-col gap-3 flex-1 overflow-hidden min-h-[280px]">
-            <div className="flex items-center justify-between pb-2 border-b border-white/5">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
-                  <Bot className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-xs font-bold tracking-wider text-white">CONTRÔLEUR IA ETHERWORLD</h3>
-                  <p className="text-[9px] text-white/40 uppercase">Assistance Réseau & Environnement</p>
-                </div>
+          <section className="rounded-[2rem] border border-white/10 bg-slate-950/70 p-5 shadow-2xl shadow-black/30 backdrop-blur-xl">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="grid h-10 w-10 place-items-center rounded-2xl border border-cyan-400/25 bg-cyan-400/10 text-cyan-300">
+                <Wand2 className="h-4 w-4" />
               </div>
-              <div className="text-[10px] text-cyan-400/80 font-mono bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-500/20">
-                PROTOCLE EN LIGNE
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-300">Mission IA</p>
+                <h3 className="font-black">Plan de construction</h3>
               </div>
             </div>
-
-            {/* Chat Messages Log */}
-            <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-3 text-xs p-2 rounded-2xl bg-slate-950/45 border border-slate-900/60 min-h-[120px]">
-              {messages.map((msg, index) => (
-                <div 
-                  key={index} 
-                  className={`flex gap-2.5 max-w-[85%] ${
-                    msg.sender === 'user' ? 'ml-auto flex-row-reverse' : ''
-                  }`}
-                >
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] shrink-0 ${
-                    msg.sender === 'user' 
-                      ? 'bg-blue-600 text-white' 
-                      : 'bg-cyan-950 border border-cyan-500/30 text-cyan-400'
-                  }`}>
-                    {msg.sender === 'user' ? 'U' : 'AI'}
-                  </div>
-                  <div className={`p-2.5 rounded-2xl ${
-                    msg.sender === 'user' 
-                      ? 'bg-blue-600/20 border border-blue-500/20 text-blue-100 rounded-tr-none' 
-                      : 'bg-white/5 border border-white/5 text-white/90 rounded-tl-none'
-                  }`}>
-                    <p className="leading-relaxed whitespace-pre-wrap">{msg.text}</p>
-                    <span className="block mt-1 text-[8px] text-white/30 text-right">{msg.timestamp}</span>
-                  </div>
-                </div>
-              ))}
-              <div ref={chatEndRef} />
+            <div className="space-y-3 text-sm leading-6 text-white/55">
+              <p>1. Garder cette page comme entrée unique du projet.</p>
+              <p>2. Brancher les vrais registres hôtel/dépanneur dans les cartes.</p>
+              <p>3. Garder les commandes sensibles côté serveur seulement.</p>
+              <p>4. Remplacer les anciennes pages dashboard par des panneaux internes.</p>
             </div>
+          </section>
 
-            {/* Predefined Action Chips */}
-            <div className="flex flex-wrap gap-1.5 py-1">
-              <button 
-                onClick={() => handleSendMessage('Fais pleuvoir')}
-                className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/5 hover:bg-cyan-500/10 hover:border-cyan-500/20 text-[10px] font-semibold text-white/60 hover:text-cyan-300 transition cursor-pointer flex items-center gap-1"
-              >
-                🌧 Pluie
-              </button>
-              <button 
-                onClick={() => handleSendMessage('Fais neiger')}
-                className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/5 hover:bg-cyan-500/10 hover:border-cyan-500/20 text-[10px] font-semibold text-white/60 hover:text-cyan-300 transition cursor-pointer flex items-center gap-1"
-              >
-                ❄ Neige
-              </button>
-              <button 
-                onClick={() => handleSendMessage('Beau temps')}
-                className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/5 hover:bg-cyan-500/10 hover:border-cyan-500/20 text-[10px] font-semibold text-white/60 hover:text-cyan-300 transition cursor-pointer flex items-center gap-1"
-              >
-                ☀ Beau Temps
-              </button>
-              <button 
-                onClick={() => handleSendMessage('Spawn 1 agent')}
-                className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/5 hover:bg-cyan-500/10 hover:border-cyan-500/20 text-[10px] font-semibold text-white/60 hover:text-cyan-300 transition cursor-pointer flex items-center gap-1"
-              >
-                🤖 Déployer Agent
-              </button>
-              <button 
-                onClick={() => handleSendMessage('Déclenche arcane explosion')}
-                className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/5 hover:bg-red-500/10 hover:border-red-500/20 text-[10px] font-semibold text-white/60 hover:text-red-300 transition cursor-pointer flex items-center gap-1"
-              >
-                💥 Explosion d'Arcane
-              </button>
+          <section className="rounded-[2rem] border border-white/10 bg-slate-950/70 p-5 shadow-2xl shadow-black/30 backdrop-blur-xl">
+            <div className="flex items-center gap-3 text-sm text-white/55">
+              <Compass className="h-4 w-4 text-cyan-300" />
+              <span>Québec · Portneuf · Route 138 · Hôtel · Dépanneur</span>
             </div>
-
-            {/* Input Bar */}
-            <div className="flex gap-2">
-              <input 
-                type="text" 
-                value={chatInput}
-                onChange={e => setChatInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && submitChat()}
-                placeholder="Discutez avec l'agent ou ordonnez une commande..."
-                className="flex-1 bg-slate-950/85 border border-slate-800 rounded-xl px-4 py-2 text-xs outline-none focus:border-cyan-500/50 transition text-white"
-              />
-              <button 
-                onClick={submitChat}
-                className="w-9 h-9 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-[#050711] flex items-center justify-center hover:scale-[1.03] active:scale-[0.98] transition cursor-pointer shrink-0"
-              >
-                <Send className="w-4 h-4 fill-current" />
-              </button>
-            </div>
-          </div>
-
-        </div>
-
+          </section>
+        </aside>
       </main>
     </div>
   )
