@@ -44,3 +44,12 @@ test/treeshake/index.webgpu.bundle.min.js
 test/treeshake/index.webgpu.nodes.bundle.js
 test/treeshake/index.webgpu.nodes.bundle.min.js
 test/unit/build
+
+# EtherWorld local audits/backups
+_firebase_audit/
+*.backup.*
+src/server/index.backup.*.cjs
+
+# Env serveur local
+.env.server
+firebase-service-account.json

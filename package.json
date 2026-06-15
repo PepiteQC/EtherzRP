@@ -12,7 +12,8 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
-    "lint:fix": "eslint src --ext .ts,.tsx,.js,.jsx --fix"
+    "lint:fix": "eslint src --ext .ts,.tsx,.js,.jsx --fix",
+    "dev:server": "node --watch src/server/index.cjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.12",
