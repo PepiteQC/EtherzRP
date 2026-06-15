@@ -3,7 +3,9 @@
  * Divise le monde en tuiles et gère leur chargement/déchargement
  */
 
-import { BuildingConfig, Building3D, MaterialLibrary } from './BuildingSystem';
+import * as THREE from 'three';
+import { BuildingConfig, Building3D, MaterialLibrary } from '../buildings/BuildingSystem';
+import { WorldDataManager } from '../data/WorldDataManager';
 
 export interface Chunk {
   x: number;
@@ -38,12 +40,14 @@ export class ChunkManager {
   private chunks = new Map<string, Chunk>();
   private config: ChunkConfig;
   private materialLib: MaterialLibrary;
+  private worldDataManager: WorldDataManager;
   private buildingDataMap = new Map<string, BuildingConfig[]>();
   private activeChunkCoords = new Set<string>();
 
   constructor(config: Partial<ChunkConfig> = {}, materialLib: MaterialLibrary) {
     this.config = { ...DEFAULT_CHUNK_CONFIG, ...config };
     this.materialLib = materialLib;
+    this.worldDataManager = new WorldDataManager();
   }
 
   /**
@@ -93,8 +97,10 @@ export class ChunkManager {
       lastAccessed: Date.now(),
     };
 
-    // Charger les bâtiments depuis le registre
-    const buildingConfigs = this.buildingDataMap.get(key) || [];
+    // Charger les bâtiments géospatiaux maîtres
+    const chunkData = this.worldDataManager.getWorldData(x * this.config.size, z * this.config.size);
+    const buildingConfigs = chunkData.buildings || [];
+    
     chunk.buildings = buildingConfigs.map((config) => {
       const building = new Building3D(config, this.materialLib);
       building.createMesh();

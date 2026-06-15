@@ -11,14 +11,11 @@ import { Game } from './components/etherworld'
 import { HUD } from './components/HUD'
 import CityIntro from './components/intro/CityIntro'
 import IntroCinematicOverlay from './components/intro/CinematicOverlay'
-<<<<<<< HEAD
-import EtherworldConnectionScreen from './components/dashboard/EtherworldConnectionScreen'
-=======
 import EtherworldDashboard from './components/dashboard/EtherworldDashboard'
->>>>>>> 9cfcf813650b52c38febb2f6437efd1af52ab38c
 import { loadCharacterProfile, type EtherworldCharacterProfile } from './components/dashboard/characterProfile'
 import RayMarchingKinect from './components/kinect/RayMarchingKinect'
-import AdminConsole from './admin/AdminConsole'
+import AdminConsole, { type AdminTool } from './admin/AdminConsole'
+import GameWorldManager from './world/scenes/GameScene'
 import { useStore } from '@/lib/etherworld/game-store'
 import AuthContext from './context/AuthContext'
 import { useState, useEffect, useRef, useCallback, useContext } from 'react'
@@ -27,21 +24,12 @@ import { getActiveJob, getState, subscribe, type ActiveJob } from './store/gameS
 import type { DoorZone } from './data/quebecBuildings'
 
 // ─────────────────────────────────────────────
-type Phase = 'menu' | 'game' | 'kinect'
-type AdminTool = 'editor' | 'agent' | 'weather' | 'objectCreator' | 'stats' | null
+type Phase = 'menu' | 'game' | 'game-v5' | 'kinect'
 
 const OWNER_EMAILS = (import.meta.env.VITE_OWNER_EMAILS ?? 'pepiteqc@gmail.com,owner@etherworld.local')
   .split(',')
   .map((email: string) => email.trim().toLowerCase())
   .filter(Boolean)
-<<<<<<< HEAD
-=======
-
-const OWNER_EMAILS = (import.meta.env.VITE_OWNER_EMAILS ?? 'pepiteqc@gmail.com,owner@etherworld.local')
-  .split(',')
-  .map((email: string) => email.trim().toLowerCase())
-  .filter(Boolean)
->>>>>>> 9cfcf813650b52c38febb2f6437efd1af52ab38c
 
 // Save chargée UNE SEULE FOIS au module load (synchrone garanti)
 const INITIAL_SAVE = loadSave()
@@ -70,7 +58,7 @@ export default function App() {
     catch { return false }
   })
   const [adminOpen,      setAdminOpen]      = useState(false)
-  const [adminTool,      setAdminTool]      = useState<AdminTool>(null)
+  const [adminTool,      setAdminTool]      = useState<AdminTool | null>(null)
 
   // ── Game State ────────────────────────────────
   const [speed,          setSpeed]          = useState(0)
@@ -227,6 +215,12 @@ export default function App() {
     setTimeout(() => setFade(false), 900)
   }, [savedGame])
 
+  const handleStartV5 = useCallback(() => {
+    setFade(true)
+    setTimeout(() => setPhase('game-v5'), 600)
+    setTimeout(() => setFade(false), 900)
+  }, [])
+
   const handleDeleteSave = useCallback(() => {
     deleteSave()
     window.location.reload()
@@ -271,9 +265,6 @@ export default function App() {
           MENU
           ════════════════════════════════════ */}
       {phase === 'menu' && (
-<<<<<<< HEAD
-        <EtherworldConnectionScreen onComplete={() => handleStart(Boolean(savedGame))} />
-=======
         <EtherworldDashboard
           savedGame={savedGame}
           ownerId={ownerId}
@@ -281,16 +272,12 @@ export default function App() {
           isOwner={isOwner}
           onCharacterCreated={setCharacterProfile}
           onJoin={() => handleStart(Boolean(savedGame))}
+          onJoinV5={handleStartV5}
           onOpenObjectCreator={() => {
             setAdminOpen(true)
-<<<<<<< HEAD
-            setAdminTool('editor')
-=======
             setAdminTool('objectCreator')
->>>>>>> 57c10a0 (Add dashboard, world components, and project archive files)
           }}
         />
->>>>>>> 9cfcf813650b52c38febb2f6437efd1af52ab38c
       )}
 
       {/* ════════════════════════════════════
@@ -317,6 +304,36 @@ export default function App() {
             }}
           >
             ← MENU
+          </button>
+        </div>
+      )}
+
+      {/* ════════════════════════════════════
+          JEU V5 (CHUNKS & LOD)
+          ════════════════════════════════════ */}
+      {phase === 'game-v5' && (
+        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+          <GameWorldManager />
+          <button
+            onClick={() => setPhase('menu')}
+            style={{
+              position:    'absolute',
+              top:         16,
+              right:       16,
+              zIndex:      100,
+              padding:     '8px 20px',
+              fontSize:    11,
+              fontFamily:  'monospace',
+              letterSpacing: 3,
+              background:  'rgba(0,0,0,0.75)',
+              border:      '1px solid #22d3ee',
+              color:       '#22d3ee',
+              cursor:      'pointer',
+              borderRadius: '8px',
+              fontWeight: 'bold',
+            }}
+          >
+            ← MENU PRINCIPAL
           </button>
         </div>
       )}
@@ -389,7 +406,7 @@ export default function App() {
         isOpen={adminOpen}
         onClose={handleAdminClose}
         activeTool={adminTool}
-        onToolChange={setAdminTool}
+        onToolChange={(tool) => setAdminTool(tool)}
       />
 
     </div>

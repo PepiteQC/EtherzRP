@@ -1,0 +1,92 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Fonctions d'autorisation et de validation
+    // ─────────────────────────────────────────────────────────────────────────
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isSelf(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.role == 'admin' || 
+        request.auth.token.role == 'owner' || 
+        request.auth.token.admin == true
+      );
+    }
+
+    // Garde-fou pour bloquer la triche (client ne peut pas modifier argent ou admin en direct)
+    function isNotModifyingSensitiveFields() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(['money', 'role', 'isBanned']);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Règles des 8 collections
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // 1. users/{uid} — Profil utilisateur et UI prefs
+    match /users/{uid} {
+      allow read: if isAuthenticated();
+      // Seul l'utilisateur peut modifier ses préférences, sans toucher à son rôle ou statut de ban
+      allow update: if isSelf(uid) && isNotModifyingSensitiveFields();
+      allow create: if isSelf(uid) && request.resource.data.role == 'player';
+      allow delete: if isAdmin();
+    }
+
+    // 2. players/{uid} — Données de gameplay (Position, Santé, Cache)
+    match /players/{uid} {
+      allow read: if isAuthenticated();
+      // Le client peut auto-sauvegarder sa position, santé et stamina toutes les X secondes
+      allow update: if isSelf(uid) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['money', 'job']);
+      allow create: if isSelf(uid);
+      allow delete: if isAdmin();
+    }
+
+    // 3. inventories/{uid} — Objets et Armes
+    match /inventories/{uid} {
+      // Un joueur lit son inventaire. Les ajouts/suppressions d'objets sensibles passent par le serveur Node.
+      allow read: if isSelf(uid) || isAdmin();
+      allow write: if isAdmin(); // Le client passe par POST /api/inventory/use
+    }
+
+    // 4. vehicles/{uid} — Véhicules du joueur
+    match /vehicles/{uid} {
+      allow read: if isAuthenticated(); // Tout le monde peut voir la plaque/modèle pour le rendu
+      allow update: if (isSelf(resource.data.ownerUid) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['model', 'plate'])) || isAdmin();
+      allow create, delete: if isAdmin(); // Spawns de véhicules contrôlés par Node ou Admin
+    }
+
+    // 5. worldState/global — Météo et heure globale
+    match /worldState/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin(); // Node ou Admin change la météo
+    }
+
+    // 6. accessLogs/{logId} — Traces d'ouverture de portes et coffres
+    match /accessLogs/{logId} {
+      // Les logs sont créés par Node ou par les joueurs en interact, mais modifiables par personne
+      allow create: if isAuthenticated();
+      allow read, update, delete: if isAdmin();
+    }
+
+    // 7. sessions/{sessionId} — Sessions actives
+    match /sessions/{sessionId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isSelf(request.resource.data.uid);
+      allow delete: if isAdmin();
+    }
+
+    // 8. adminLogs/{logId} — Traces de modération
+    match /adminLogs/{logId} {
+      allow create: if isAdmin();
+      allow read, update, delete: if isAdmin();
+    }
+  }
+}

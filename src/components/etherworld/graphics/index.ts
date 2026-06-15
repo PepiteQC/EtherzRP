@@ -1,5 +1,9 @@
-export { default as WorldGraphics } from './WorldGraphics'
-<<<<<<< HEAD
-export { default as HDVisualRig } from './HDVisualRig'
-=======
->>>>>>> 9cfcf813650b52c38febb2f6437efd1af52ab38c
+/**
+ * src/components/etherworld/graphics/index.ts
+ * 
+ * Export propre et unifié du module d'ambiance visuelle HD Cartoon et Réflective.
+ */
+
+export { resolveTimePhase, getAtmospherePalette, createSkyGradientTexture, type TimePhase, type AtmospherePalette } from './visualAtmosphere';
+export { HDVisualRig } from './HDVisualRig';
+export { WorldGraphics } from './WorldGraphics';

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useStore } from '../store/useStore';
+import { FirebaseAuthClient } from '../../lib/firebase/firebaseClient';
 
 export default function AuthModal() {
   const { activeModal, closeModal, login } = useStore();
@@ -28,9 +29,14 @@ export default function AuthModal() {
 
     if (tab === 'login') {
       if (formData.email && formData.password) {
-        login(formData.email.split('@')[0]);
-        setSuccess('Connexion réussie! Bienvenue dans ETHERWORLD.');
-        setTimeout(closeModal, 1500);
+        try {
+          await FirebaseAuthClient.login(formData.email, formData.password);
+          login(formData.email.split('@')[0]);
+          setSuccess('Connexion Firebase réussie! Bienvenue dans ETHERWORLD.');
+          setTimeout(closeModal, 1500);
+        } catch (err: any) {
+          setError(err.message || 'Identifiants Firebase invalides.');
+        }
       } else {
         setError('Email et mot de passe requis.');
       }
@@ -41,9 +47,14 @@ export default function AuthModal() {
         return;
       }
       if (formData.email && formData.password && formData.username && formData.charName) {
-        login(formData.username);
-        setSuccess('Compte créé! Bienvenue dans ETHERWORLD RP QUÉBEC!');
-        setTimeout(closeModal, 1500);
+        try {
+          await FirebaseAuthClient.register(formData.email, formData.password);
+          login(formData.username);
+          setSuccess('Compte Firebase créé! Bienvenue dans ETHERWORLD RP QUÉBEC!');
+          setTimeout(closeModal, 1500);
+        } catch (err: any) {
+          setError(err.message || 'Échec de la création de compte Firebase.');
+        }
       } else {
         setError('Tous les champs sont requis.');
       }

@@ -7,7 +7,7 @@ import React, { useMemo, useEffect, useRef } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { Building3D, MaterialLibrary, BuildingType } from '../BuildingSystem';
-import { WorldDataManager } from '../data/WorldDataManager';
+import { WorldDataManager } from '../../data/WorldDataManager';
 
 interface BuildingsRendererProps {
   centerX?: number;
@@ -29,7 +29,7 @@ export const BuildingsRenderer: React.FC<BuildingsRendererProps> = ({
   const groupRef = useRef(new THREE.Group());
   const materialLibRef = useRef<MaterialLibrary>(new MaterialLibrary());
   const worldDataRef = useRef<WorldDataManager>(new WorldDataManager());
-  const renderedBuildingsRef = useRef<Map<string, THREE.Mesh>>(new Map());
+  const renderedBuildingsRef = useRef<Map<string, THREE.Group>>(new Map());
   const lastPositionRef = useRef({ x: centerX, z: centerZ });
 
   useEffect(() => {

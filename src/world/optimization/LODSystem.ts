@@ -3,6 +3,8 @@
  * Réduit la complexité géométrique basée sur la distance à la caméra
  */
 
+import * as THREE from 'three';
+
 export interface LODConfig {
   high: number; // distance maximum pour LOD haute
   medium: number; // distance maximum pour LOD moyenne
@@ -11,10 +13,10 @@ export interface LODConfig {
 }
 
 export interface LODGeometry {
-  high: BufferGeometry;
-  medium: BufferGeometry;
-  low: BufferGeometry;
-  veryLow?: BufferGeometry;
+  high: THREE.BufferGeometry;
+  medium: THREE.BufferGeometry;
+  low: THREE.BufferGeometry;
+  veryLow?: THREE.BufferGeometry;
 }
 
 // Configuration par défaut pour les distances LOD
@@ -29,7 +31,7 @@ export const DEFAULT_LOD_CONFIG: LODConfig = {
  * Crée des géométries simplifiées pour différents niveaux de détail
  */
 export class SimplificationEngine {
-  static simplifyGeometry(geometry: BufferGeometry, ratio: number): BufferGeometry {
+  static simplifyGeometry(geometry: THREE.BufferGeometry, ratio: number): THREE.BufferGeometry {
     // Simplifie une géométrie en réduisant les vertex
     const positionAttribute = geometry.getAttribute('position');
     if (!positionAttribute) return geometry;
@@ -54,7 +56,7 @@ export class SimplificationEngine {
     return simplified;
   }
 
-  static createBillboard(width: number, height: number): BufferGeometry {
+  static createBillboard(width: number, height: number): THREE.BufferGeometry {
     // Crée un simple quad pour représenter un bâtiment éloigné
     return new THREE.PlaneGeometry(width, height);
   }
@@ -71,7 +73,7 @@ export class LODInstanceManager {
     this.lodConfig = { ...DEFAULT_LOD_CONFIG, ...config };
   }
 
-  getLODGeometry(key: string, baseGeometry: BufferGeometry): LODGeometry {
+  getLODGeometry(key: string, baseGeometry: THREE.BufferGeometry): LODGeometry {
     if (this.lodCache.has(key)) {
       return this.lodCache.get(key)!;
     }
