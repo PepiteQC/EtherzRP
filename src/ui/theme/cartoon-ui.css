@@ -1,0 +1,78 @@
+/* ==================================================================
+   cartoon-ui.css — Couche UI "low-poly cartoon" EtherWorld QC
+   ------------------------------------------------------------------
+   Variables CSS dérivées de cartoonTokens (gardez-les synchronisées).
+   À importer après index.css :  import './ui/theme/cartoon-ui.css'
+   ================================================================== */
+
+:root {
+  /* Palette */
+  --ew-primary:   #ff8c42;  /* orange carotte */
+  --ew-secondary: #ffd166;
+  --ew-accent:    #06b6d4;
+  --ew-pink:      #ef476f;
+  --ew-green:     #06d6a0;
+  --ew-ink:       #26233a;
+  --ew-paper:     #fffaf0;
+  --ew-shadow:    #2b2440;
+
+  /* Rayons / typo */
+  --ew-r-sm: 8px;  --ew-r-md: 14px;  --ew-r-lg: 22px;  --ew-r-pill: 999px;
+  --ew-font: 'Baloo 2', 'Nunito', 'Segoe UI', system-ui, sans-serif;
+
+  /* Ombres "stickers" */
+  --ew-sh-card: 0 4px 0 0 rgba(43,36,64,.10), 0 12px 30px -10px rgba(43,36,64,.25);
+  --ew-sh-pop:  0 0 0 3px rgba(255,140,66,.20), 0 8px 24px -6px rgba(255,140,66,.40);
+}
+
+/* Carte cartoon : coins ronds, bord doux, ombre décalée */
+.ew-card {
+  background: var(--ew-paper);
+  border: 2px solid rgba(38,35,58,.08);
+  border-radius: var(--ew-r-lg);
+  box-shadow: var(--ew-sh-card);
+  color: var(--ew-ink);
+  font-family: var(--ew-font);
+  padding: 20px 22px;
+}
+
+/* Bouton "jellybean" : gros, rond, qui s'enfonce au clic */
+.ew-btn {
+  font-family: var(--ew-font);
+  font-weight: 800;
+  letter-spacing: .02em;
+  border: none;
+  border-radius: var(--ew-r-pill);
+  padding: 14px 28px;
+  cursor: pointer;
+  color: #fff;
+  background: linear-gradient(180deg, var(--ew-primary), #f06f2a);
+  box-shadow: 0 5px 0 0 #c9531a, 0 12px 22px -8px rgba(240,111,42,.6);
+  transition: transform .08s ease, box-shadow .08s ease;
+}
+.ew-btn:hover  { transform: translateY(-2px); box-shadow: 0 7px 0 0 #c9531a, 0 16px 28px -8px rgba(240,111,42,.7); }
+.ew-btn:active { transform: translateY(3px);  box-shadow: 0 2px 0 0 #c9531a, 0 6px 14px -8px rgba(240,111,42,.6); }
+
+.ew-btn--ghost {
+  background: transparent;
+  color: var(--ew-ink);
+  box-shadow: inset 0 0 0 2px rgba(38,35,58,.18);
+}
+.ew-btn--ghost:hover { box-shadow: inset 0 0 0 2px rgba(38,35,58,.35); transform: translateY(-1px); }
+
+/* Badge / pastille */
+.ew-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--ew-font); font-weight: 700; font-size: 12px;
+  padding: 4px 12px; border-radius: var(--ew-r-pill);
+  background: var(--ew-secondary); color: var(--ew-ink);
+}
+
+/* Titre cartoon avec contour doux */
+.ew-title {
+  font-family: var(--ew-font);
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 3px 0 var(--ew-shadow), 0 6px 18px rgba(43,36,64,.4);
+  letter-spacing: .01em;
+}

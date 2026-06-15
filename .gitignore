@@ -53,3 +53,6 @@ src/server/index.backup.*.cjs
 # Env serveur local
 .env.server
 firebase-service-account.json
+
+# Ménage — code mort archivé (réversible)
+_attic/
