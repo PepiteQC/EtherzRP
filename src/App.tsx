@@ -1,10 +1,9 @@
 /**
- * App.tsx — v3.0 Production
- * - Nouveau HUD connecté
- * - Events système (toggle-admin, open-editor, hud-notification)
- * - Raccourcis clavier complets (F2, F3, F12, Escape)
- * - Transition de phase propre
- * - AdminConsole connectée au HUD
+ * App.tsx — v3.5 Production
+ * - Dashboard unifié et Agent IA connectés
+ * - Phase unique de jeu : EtherWorld RP
+ * - Raccourcis clavier (F12, F2, F3, Escape)
+ * - Nettoyage des modes obsolètes (Kinect, V5 séparé)
  */
 
 import { Game } from './components/etherworld'
@@ -13,9 +12,7 @@ import CityIntro from './components/intro/CityIntro'
 import IntroCinematicOverlay from './components/intro/CinematicOverlay'
 import EtherworldDashboard from './components/dashboard/EtherworldDashboard'
 import { loadCharacterProfile, type EtherworldCharacterProfile } from './components/dashboard/characterProfile'
-import RayMarchingKinect from './components/kinect/RayMarchingKinect'
 import AdminConsole, { type AdminTool } from './admin/AdminConsole'
-import GameWorldManager from './world/scenes/GameScene'
 import { useStore } from '@/lib/etherworld/game-store'
 import AuthContext from './context/AuthContext'
 import { useState, useEffect, useRef, useCallback, useContext } from 'react'
@@ -24,14 +21,14 @@ import { getActiveJob, getState, subscribe, type ActiveJob } from './store/gameS
 import type { DoorZone } from './data/quebecBuildings'
 
 // ─────────────────────────────────────────────
-type Phase = 'menu' | 'game' | 'game-v5' | 'kinect'
+type Phase = 'menu' | 'game'
 
 const OWNER_EMAILS = (import.meta.env.VITE_OWNER_EMAILS ?? 'pepiteqc@gmail.com,owner@etherworld.local')
   .split(',')
   .map((email: string) => email.trim().toLowerCase())
   .filter(Boolean)
 
-// Save chargée UNE SEULE FOIS au module load (synchrone garanti)
+// Save chargée UNE SEULE FOIS au démarrage
 const INITIAL_SAVE = loadSave()
 // ─────────────────────────────────────────────
 
@@ -114,7 +111,6 @@ export default function App() {
   // ============================================================
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      // Ignore si on tape dans un input
       if (e.target instanceof HTMLInputElement || 
           e.target instanceof HTMLTextAreaElement) return
 
@@ -149,19 +145,14 @@ export default function App() {
   }, [adminOpen])
 
   // ============================================================
-  //  GLOBAL EVENTS (depuis HUD, AdminConsole, Game, etc.)
+  //  GLOBAL EVENTS
   // ============================================================
   useEffect(() => {
-    // Depuis le bouton CONSOLE dans le HUD
     const handleToggleAdmin = () => setAdminOpen(prev => !prev)
-
-    // Depuis le bouton EDITOR dans le HUD
     const handleOpenEditor = () => {
       setAdminOpen(true)
       setAdminTool('editor')
     }
-
-    // Depuis le HUD v3 — notifications
     const handleHudNotification = (e: CustomEvent) => {
       if (e.detail?.message) {
         setNotification(e.detail.message)
@@ -169,24 +160,14 @@ export default function App() {
       }
     }
 
-    // Depuis le menu Kinect
-    const handleSetPhase = (e: CustomEvent) => {
-      if (e.detail?.phase) setPhase(e.detail.phase as Phase)
-    }
-
     window.addEventListener('toggle-admin', handleToggleAdmin)
     window.addEventListener('open-editor', handleOpenEditor)
     window.addEventListener('hud-notification', handleHudNotification as EventListener)
-    window.addEventListener('set-phase', handleSetPhase as EventListener)
-
-    // Expose pour les boutons inline (menu Kinect)
-    ;(window as any).setAppPhase = (p: Phase) => setPhase(p)
 
     return () => {
       window.removeEventListener('toggle-admin', handleToggleAdmin)
       window.removeEventListener('open-editor', handleOpenEditor)
       window.removeEventListener('hud-notification', handleHudNotification as EventListener)
-      window.removeEventListener('set-phase', handleSetPhase as EventListener)
     }
   }, [])
 
@@ -194,7 +175,6 @@ export default function App() {
   //  GAME START / TRANSITION
   // ============================================================
   const handleStart = useCallback((continueGame: boolean) => {
-    // Décider de la save AVANT la transition
     if (continueGame && savedGame) {
       setActiveSave(savedGame)
       setIsNewPlayer(false)
@@ -209,22 +189,10 @@ export default function App() {
       setMode('driving')
     }
 
-    // Fade out → game
     setFade(true)
     setTimeout(() => setPhase('game'), 600)
     setTimeout(() => setFade(false), 900)
   }, [savedGame])
-
-  const handleStartV5 = useCallback(() => {
-    setFade(true)
-    setTimeout(() => setPhase('game-v5'), 600)
-    setTimeout(() => setFade(false), 900)
-  }, [])
-
-  const handleDeleteSave = useCallback(() => {
-    deleteSave()
-    window.location.reload()
-  }, [])
 
   const handleAdminClose = useCallback(() => {
     setAdminOpen(false)
@@ -262,7 +230,7 @@ export default function App() {
       }} />
 
       {/* ════════════════════════════════════
-          MENU
+          MENU PRINCIPAL (DASHBOARD)
           ════════════════════════════════════ */}
       {phase === 'menu' && (
         <EtherworldDashboard
@@ -272,7 +240,6 @@ export default function App() {
           isOwner={isOwner}
           onCharacterCreated={setCharacterProfile}
           onJoin={() => handleStart(Boolean(savedGame))}
-          onJoinV5={handleStartV5}
           onOpenObjectCreator={() => {
             setAdminOpen(true)
             setAdminTool('objectCreator')
@@ -281,65 +248,7 @@ export default function App() {
       )}
 
       {/* ════════════════════════════════════
-          KINECT
-          ════════════════════════════════════ */}
-      {phase === 'kinect' && (
-        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-          <RayMarchingKinect />
-          <button
-            onClick={() => setPhase('menu')}
-            style={{
-              position:    'absolute',
-              top:         16,
-              right:       16,
-              zIndex:      100,
-              padding:     '8px 20px',
-              fontSize:    11,
-              fontFamily:  'monospace',
-              letterSpacing: 3,
-              background:  'transparent',
-              border:      '1px solid rgba(255,255,255,0.3)',
-              color:       'rgba(255,255,255,0.7)',
-              cursor:      'pointer',
-            }}
-          >
-            ← MENU
-          </button>
-        </div>
-      )}
-
-      {/* ════════════════════════════════════
-          JEU V5 (CHUNKS & LOD)
-          ════════════════════════════════════ */}
-      {phase === 'game-v5' && (
-        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-          <GameWorldManager />
-          <button
-            onClick={() => setPhase('menu')}
-            style={{
-              position:    'absolute',
-              top:         16,
-              right:       16,
-              zIndex:      100,
-              padding:     '8px 20px',
-              fontSize:    11,
-              fontFamily:  'monospace',
-              letterSpacing: 3,
-              background:  'rgba(0,0,0,0.75)',
-              border:      '1px solid #22d3ee',
-              color:       '#22d3ee',
-              cursor:      'pointer',
-              borderRadius: '8px',
-              fontWeight: 'bold',
-            }}
-          >
-            ← MENU PRINCIPAL
-          </button>
-        </div>
-      )}
-
-      {/* ════════════════════════════════════
-          JEU
+          JEU ETHERWORLD
           ════════════════════════════════════ */}
       {phase === 'game' && (
         <>
@@ -350,13 +259,13 @@ export default function App() {
             onModeChange={setMode}
             onSaveStatus={setSaveStatus}
             onNearBuilding={setNearBuilding}
-            onInteriorPrompt={setInteriorPrompt}
+            onInteriorPrompt={onInteriorPrompt}
             onIsInInterior={setIsInInterior}
             initialSave={activeSave}
             isNewPlayer={isNewPlayer}
           />
 
-          {/* HUD — version améliorée */}
+          {/* HUD branché */}
           <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 10 }}>
             <div style={{ pointerEvents: 'auto' }}>
               <HUD
@@ -394,13 +303,13 @@ export default function App() {
             </div>
           </div>
 
-          {/* Cinématique nouveau joueur */}
+          {/* Cinématique d'introduction */}
           {isNewPlayer && <IntroCinematicOverlay />}
         </>
       )}
 
       {/* ════════════════════════════════════
-          ADMIN CONSOLE — disponible partout
+          ADMIN CONSOLE (disponible partout)
           ════════════════════════════════════ */}
       <AdminConsole
         isOpen={adminOpen}
@@ -409,192 +318,6 @@ export default function App() {
         onToolChange={(tool) => setAdminTool(tool)}
       />
 
-    </div>
-  )
-}
-
-// ============================================================
-//  MENU SCREEN
-// ============================================================
-interface MenuScreenProps {
-  savedGame:    SaveData | null
-  onStart:      (continueGame: boolean) => void
-  onDeleteSave: () => void
-}
-
-function MenuScreen({ savedGame, onStart, onDeleteSave }: MenuScreenProps) {
-  const saveDate = savedGame?.savedAt
-    ? new Date(savedGame.savedAt).toLocaleDateString('fr-CA', {
-        day:    '2-digit',
-        month:  'short',
-        hour:   '2-digit',
-        minute: '2-digit',
-      })
-    : null
-
-  return (
-    <div style={{
-      position:       'absolute',
-      inset:          0,
-      zIndex:         10,
-      display:        'flex',
-      flexDirection:  'column',
-      alignItems:     'center',
-      justifyContent: 'center',
-      background:     'linear-gradient(180deg, #0a1628 0%, #1a3a5c 50%, #0d2438 100%)',
-      color:          'white',
-      fontFamily:     'monospace',
-    }}>
-
-      {/* Titre */}
-      <div style={{ fontSize: 11, letterSpacing: 8, color: '#4a9ede', marginBottom: 8 }}>
-        BIENVENUE DANS
-      </div>
-      <div style={{ fontSize: 52, fontWeight: 900, letterSpacing: 4, lineHeight: 1, marginBottom: 4 }}>
-        ETHERWORLD
-      </div>
-      <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: 12, color: '#3a7ebd', marginBottom: 2 }}>
-        QC RP
-      </div>
-      <div style={{ fontSize: 11, color: '#2a6aa0', letterSpacing: 4, marginBottom: 40 }}>
-        QUÉBEC · PORTNEUF · TROIS-RIVIÈRES · ETHERWORLD CITY
-      </div>
-
-      {/* Info contrôles */}
-      <div style={{
-        fontSize: 10, color: '#4a8aaa', marginBottom: 36,
-        textAlign: 'center', lineHeight: 1.9,
-        border: '1px solid #1a4a6a', padding: '16px 28px', borderRadius: 4,
-      }}>
-        🚗 WASD / Flèches — Conduire · Espace — Freiner<br />
-        🚪 E — Sortir / Entrer véhicule ou bâtiment<br />
-        🚶 À pied : WASD marcher · A/D tourner<br />
-        ⚙️ F12 — Console Admin · F2 — Éditeur · F3 — Agent IA<br />
-        🌲 Route 138 · Québec → EtherWorld City
-      </div>
-
-      {/* Bouton Continuer */}
-      {savedGame && (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-          <button
-            onClick={() => onStart(true)}
-            style={{
-              background: 'rgba(20,60,20,0.6)', border: '2px solid #3acd6e',
-              color: '#60ef90', padding: '14px 48px', fontSize: 14,
-              letterSpacing: 6, cursor: 'pointer', fontFamily: 'monospace',
-              textTransform: 'uppercase', transition: 'all 0.2s', width: 320,
-            }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(30,90,30,0.8)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'rgba(20,60,20,0.6)')}
-          >
-            ▶ Continuer
-          </button>
-          <div style={{ fontSize: 9, color: '#3a7a4a', letterSpacing: 2, textAlign: 'center' }}>
-            {savedGame.zone ?? 'Route 138'} · {savedGame.mode === 'walking' ? 'À PIED' : 'EN VOITURE'}
-            {' '}· {(savedGame.money ?? 0).toLocaleString('fr-CA')}$
-            {saveDate && <span style={{ marginLeft: 10, color: '#2a5a3a' }}>{saveDate}</span>}
-          </div>
-        </div>
-      )}
-
-      {/* Bouton Nouvelle Partie */}
-      <button
-        onClick={() => onStart(false)}
-        style={{
-          background: 'transparent', border: '2px solid #3a8ede',
-          color: '#5ab0ff', padding: '14px 48px', fontSize: 14,
-          letterSpacing: 6, cursor: 'pointer', fontFamily: 'monospace',
-          textTransform: 'uppercase', transition: 'all 0.2s',
-          width: savedGame ? 320 : undefined,
-        }}
-        onMouseEnter={e => (e.currentTarget.style.borderColor = '#5ab0ff')}
-        onMouseLeave={e => (e.currentTarget.style.borderColor = '#3a8ede')}
-      >
-        {savedGame ? '✦ Nouvelle Partie' : '▶ Démarrer'}
-      </button>
-
-      {/* Kinect Demo */}
-      <button
-        onClick={() => (window as any).setAppPhase?.('kinect')}
-        style={{
-          marginTop: 28, background: 'transparent',
-          border: '1px solid #67f6ff', color: '#67f6ff',
-          padding: '10px 32px', fontSize: 12, letterSpacing: 3,
-          cursor: 'pointer', fontFamily: 'monospace',
-          textTransform: 'uppercase', transition: 'all 0.2s',
-        }}
-        onMouseEnter={e => {
-          e.currentTarget.style.background = 'rgba(103,246,255,0.1)'
-          e.currentTarget.style.borderColor = '#a5f3fc'
-        }}
-        onMouseLeave={e => {
-          e.currentTarget.style.background = 'transparent'
-          e.currentTarget.style.borderColor = '#67f6ff'
-        }}
-      >
-        ▶ KINECT DEPTH · RAY MARCHING
-      </button>
-      <div style={{ fontSize: 9, color: '#4a8aaa', marginTop: 6, letterSpacing: 1 }}>
-        React Three Fiber · Volumetric Ray Marching · Leva Controls
-      </div>
-
-      {/* Effacer save */}
-      {savedGame && (
-        <button
-          onClick={onDeleteSave}
-          style={{
-            marginTop: 18, background: 'transparent', border: 'none',
-            color: '#3a4a5a', fontSize: 9, cursor: 'pointer',
-            fontFamily: 'monospace', letterSpacing: 2, textTransform: 'uppercase',
-          }}
-          onMouseEnter={e => (e.currentTarget.style.color = '#aa4444')}
-          onMouseLeave={e => (e.currentTarget.style.color = '#3a4a5a')}
-        >
-          ✕ Effacer la sauvegarde
-        </button>
-      )}
-    </div>
-  )
-}
-
-// ============================================================
-//  CINEMATIC OVERLAY
-// ============================================================
-function CinematicOverlay() {
-  const [visible,   setVisible]   = useState(true)
-  const [textPhase, setTextPhase] = useState(0)
-
-  const lines = [
-    { delay: 0.5,  text: 'Route 138 — Portneuf, Québec' },
-    { delay: 2.5,  text: 'Un matin de novembre...' },
-    { delay: 4.5,  text: 'EtherWorld City vous attend...' },
-    { delay: 6.5,  text: '' },
-  ]
-
-  useEffect(() => {
-    const timers = lines.map((line, i) =>
-      setTimeout(() => setTextPhase(i), line.delay * 1000)
-    )
-    const hideTimer = setTimeout(() => setVisible(false), 8000)
-    return () => { timers.forEach(clearTimeout); clearTimeout(hideTimer) }
-  }, [])
-
-  if (!visible) return null
-
-  return (
-    <div style={{
-      position: 'absolute', bottom: 100, left: '50%',
-      transform: 'translateX(-50%)', zIndex: 20,
-      textAlign: 'center', fontFamily: 'monospace', pointerEvents: 'none',
-    }}>
-      <div style={{
-        color: '#d0e8ff', fontSize: 13, letterSpacing: 4,
-        textTransform: 'uppercase', textShadow: '0 2px 12px rgba(0,0,0,0.9)',
-        opacity: lines[textPhase]?.text ? 1 : 0,
-        transition: 'opacity 0.8s ease', minHeight: 20,
-      }}>
-        {lines[textPhase]?.text ?? ''}
-      </div>
     </div>
   )
 }

@@ -1,0 +1,215 @@
+/**
+ * hooks/useProjects.ts
+ *
+ * React Query hooks for managing EtherWorld projects.
+ *
+ * Hooks:
+ *   useProjects(userId)      — list all projects for a user
+ *   useProject(id)           — single project by id
+ *   useCreateProject()       — create a new project (optimistic)
+ *   useUpdateProject()       — rename / update a project
+ *   useDeleteProject()       — delete a project (optimistic)
+ *
+ * Data is stored in Blink's managed database via the apiFetch helper.
+ * All mutations update the React Query cache optimistically so the UI
+ * responds instantly without waiting for the server round-trip.
+ */
+ 
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { apiFetch } from '../lib/blink'
+import { v4 as uuid } from 'uuid'
+ 
+// ─── Types ────────────────────────────────────────────────────────────────────
+ 
+export interface Project {
+  /** UUID primary key */
+  id: string
+  /** Display name chosen by the user */
+  name: string
+  /** Owner's user id from Blink Auth */
+  userId: string
+  /** Associated sandbox id */
+  sandboxId: string
+  /** ISO 8601 creation timestamp */
+  createdAt: string
+  /** ISO 8601 last-updated timestamp */
+  updatedAt: string
+}
+ 
+type CreateProjectInput = Pick<Project, 'name' | 'userId' | 'sandboxId'>
+type UpdateProjectInput = { id: string; userId: string; name?: string; sandboxId?: string }
+type DeleteProjectInput = { id: string; userId: string }
+ 
+// ─── Query keys ───────────────────────────────────────────────────────────────
+ 
+const keys = {
+  all:     ['projects']                            as const,
+  byUser:  (uid: string) => ['projects', uid]      as const,
+  single:  (id: string)  => ['projects', 'one', id] as const,
+}
+ 
+// ─── Base URL ─────────────────────────────────────────────────────────────────
+ 
+const API = '/api/projects'
+ 
+// ─── Hooks ────────────────────────────────────────────────────────────────────
+ 
+/**
+ * Fetch all projects belonging to `userId`.
+ * Returns an empty array while userId is falsy (unauthenticated).
+ */
+export function useProjects(userId: string | undefined) {
+  return useQuery<Project[]>({
+    queryKey: keys.byUser(userId ?? ''),
+    queryFn:  () => apiFetch<Project[]>(`${API}?userId=${userId}`),
+    enabled:  Boolean(userId),
+    // Keep data fresh — re-fetch when the window regains focus
+    staleTime: 30_000,
+  })
+}
+ 
+/**
+ * Fetch a single project by id.
+ */
+export function useProject(id: string | undefined) {
+  return useQuery<Project>({
+    queryKey: keys.single(id ?? ''),
+    queryFn:  () => apiFetch<Project>(`${API}/${id}`),
+    enabled:  Boolean(id),
+    staleTime: 60_000,
+  })
+}
+ 
+/**
+ * Create a new project.
+ *
+ * Optimistic update: the project appears in the list immediately,
+ * then gets replaced by the server response once it resolves.
+ *
+ * @example
+ *   const create = useCreateProject()
+ *   const project = await create.mutateAsync({ name: 'My App', userId, sandboxId })
+ */
+export function useCreateProject() {
+  const qc = useQueryClient()
+ 
+  return useMutation<Project, Error, CreateProjectInput>({
+    mutationFn: input => apiFetch<Project>(API, { method: 'POST', body: input }),
+ 
+    // ── Optimistic insert ──────────────────────────────────────────────────
+    onMutate: async input => {
+      // Cancel any in-flight fetches for this user's list
+      await qc.cancelQueries({ queryKey: keys.byUser(input.userId) })
+ 
+      // Snapshot for rollback
+      const previous = qc.getQueryData<Project[]>(keys.byUser(input.userId))
+ 
+      // Inject a temporary optimistic record
+      const optimistic: Project = {
+        id:        `tmp_${uuid()}`,
+        name:      input.name,
+        userId:    input.userId,
+        sandboxId: input.sandboxId,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+ 
+      qc.setQueryData<Project[]>(keys.byUser(input.userId), old =>
+        old ? [...old, optimistic] : [optimistic],
+      )
+ 
+      return { previous, optimistic }
+    },
+ 
+    // ── Replace optimistic record with real server data ────────────────────
+    onSuccess: (created, input, ctx: any) => {
+      qc.setQueryData<Project[]>(keys.byUser(input.userId), old =>
+        old?.map(p => (p.id === ctx?.optimistic?.id ? created : p)) ?? [created],
+      )
+    },
+ 
+    // ── Rollback on failure ────────────────────────────────────────────────
+    onError: (_err, input, ctx: any) => {
+      if (ctx?.previous !== undefined) {
+        qc.setQueryData(keys.byUser(input.userId), ctx.previous)
+      }
+    },
+  })
+}
+ 
+/**
+ * Rename or update a project's metadata.
+ */
+export function useUpdateProject() {
+  const qc = useQueryClient()
+ 
+  return useMutation<Project, Error, UpdateProjectInput>({
+    mutationFn: ({ id, userId: _uid, ...patch }) =>
+      apiFetch<Project>(`${API}/${id}`, { method: 'PATCH', body: patch }),
+ 
+    onMutate: async input => {
+      await qc.cancelQueries({ queryKey: keys.byUser(input.userId) })
+      const previous = qc.getQueryData<Project[]>(keys.byUser(input.userId))
+ 
+      qc.setQueryData<Project[]>(keys.byUser(input.userId), old =>
+        old?.map(p =>
+          p.id === input.id
+            ? { ...p, ...input, updatedAt: new Date().toISOString() }
+            : p,
+        ),
+      )
+ 
+      return { previous }
+    },
+ 
+    onError: (_err, input, ctx: any) => {
+      if (ctx?.previous !== undefined) {
+        qc.setQueryData(keys.byUser(input.userId), ctx.previous)
+      }
+    },
+ 
+    onSettled: (_data, _err, input) => {
+      // Always re-sync from server after update
+      qc.invalidateQueries({ queryKey: keys.byUser(input.userId) })
+    },
+  })
+}
+ 
+/**
+ * Delete a project by id.
+ *
+ * Optimistic: removes from the list immediately, restores on failure.
+ *
+ * @example
+ *   const del = useDeleteProject()
+ *   await del.mutateAsync({ id: project.id, userId: user.id })
+ */
+export function useDeleteProject() {
+  const qc = useQueryClient()
+ 
+  return useMutation<void, Error, DeleteProjectInput>({
+    mutationFn: ({ id }) =>
+      apiFetch<void>(`${API}/${id}`, { method: 'DELETE' }),
+ 
+    onMutate: async input => {
+      await qc.cancelQueries({ queryKey: keys.byUser(input.userId) })
+      const previous = qc.getQueryData<Project[]>(keys.byUser(input.userId))
+ 
+      qc.setQueryData<Project[]>(keys.byUser(input.userId), old =>
+        old?.filter(p => p.id !== input.id) ?? [],
+      )
+ 
+      return { previous }
+    },
+ 
+    onError: (_err, input, ctx: any) => {
+      if (ctx?.previous !== undefined) {
+        qc.setQueryData(keys.byUser(input.userId), ctx.previous)
+      }
+    },
+ 
+    onSettled: (_data, _err, input) => {
+      qc.invalidateQueries({ queryKey: keys.byUser(input.userId) })
+    },
+  })
+}

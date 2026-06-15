@@ -1,0 +1,531 @@
+/**
+ * lib/utils.ts
+ *
+ * Shared utility functions for EtherWorld.
+ *
+ * Sections:
+ *   1. Styling      — cn (className merging)
+ *   2. Strings      — truncate, slugify, capitalize, initials
+ *   3. Dates        — timeAgo, formatDate, formatDuration
+ *   4. Numbers      — formatBytes, clamp, round
+ *   5. Objects      — pick, omit, deepMerge
+ *   6. Arrays       — unique, groupBy, sortBy, chunk
+ *   7. Async        — sleep, retry, debounce, throttle
+ *   8. Type guards  — isString, isNumber, isDefined, isError
+ *   9. Errors       — toError, isAuthError, getUserMessage
+ *  10. Clipboard    — copyToClipboard
+ *  11. URL          — buildUrl, parseSearchParams
+ */
+ 
+import { type ClassValue, clsx } from 'clsx'
+import { twMerge } from 'tailwind-merge'
+ 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 1. STYLING
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 
+/**
+ * Merge Tailwind classes safely, resolving conflicts (e.g. p-2 vs p-4).
+ * Drop-in replacement for clsx when using Tailwind.
+ *
+ * @example cn('p-2 text-sm', condition && 'font-bold', 'p-4') → 'text-sm font-bold p-4'
+ */
+export function cn(...inputs: ClassValue[]): string {
+  return twMerge(clsx(inputs))
+}
+ 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 2. STRINGS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 
+/**
+ * Truncate a string to `maxLength`, appending `suffix` if truncated.
+ * @example truncate('Hello world', 7) → 'Hell...'
+ */
+export function truncate(str: string, maxLength: number, suffix = '…'): string {
+  if (str.length <= maxLength) return str
+  return str.slice(0, maxLength - suffix.length) + suffix
+}
+ 
+/**
+ * Convert a string to a URL-safe slug.
+ * @example slugify('Hello World! 123') → 'hello-world-123'
+ */
+export function slugify(str: string): string {
+  return str
+    .toLowerCase()
+    .normalize('NFD')                    // decompose accented chars
+    .replace(/[\u0300-\u036f]/g, '')     // strip diacritics
+    .replace(/[^a-z0-9\s-]/g, '')       // keep alphanumeric, spaces, hyphens
+    .trim()
+    .replace(/\s+/g, '-')               // spaces → hyphens
+    .replace(/-+/g, '-')                // collapse multiple hyphens
+}
+ 
+/**
+ * Capitalize the first letter of a string.
+ * @example capitalize('hello world') → 'Hello world'
+ */
+export function capitalize(str: string): string {
+  if (!str) return str
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}
+ 
+/**
+ * Extract initials from a name (up to 2 characters).
+ * @example initials('Jean Pierre Dupont') → 'JP'
+ * @example initials('claude')             → 'CL'
+ */
+export function initials(name: string): string {
+  const parts = name.trim().split(/\s+/)
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+}
+ 
+/**
+ * Count the approximate number of tokens in a string.
+ * Uses the ~4 chars/token heuristic (good enough for UI warnings).
+ * @example estimateTokens('Hello world') → 3
+ */
+export function estimateTokens(text: string): number {
+  return Math.ceil(text.length / 4)
+}
+ 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 3. DATES
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 
+const SECOND = 1_000
+const MINUTE = 60 * SECOND
+const HOUR   = 60 * MINUTE
+const DAY    = 24 * HOUR
+const WEEK   = 7  * DAY
+const MONTH  = 30 * DAY
+const YEAR   = 365 * DAY
+ 
+/**
+ * Return a human-readable relative time string.
+ * @example timeAgo(new Date(Date.now() - 90000)) → '1 minute ago'
+ * @example timeAgo('2024-01-01')                 → '1 year ago'
+ */
+export function timeAgo(date: Date | string | number): string {
+  const d    = new Date(date)
+  const diff = Date.now() - d.getTime()
+ 
+  if (diff < 30 * SECOND)  return 'just now'
+  if (diff < 2 * MINUTE)   return '1 minute ago'
+  if (diff < HOUR)         return `${Math.floor(diff / MINUTE)} minutes ago`
+  if (diff < 2 * HOUR)     return '1 hour ago'
+  if (diff < DAY)          return `${Math.floor(diff / HOUR)} hours ago`
+  if (diff < 2 * DAY)      return 'yesterday'
+  if (diff < WEEK)         return `${Math.floor(diff / DAY)} days ago`
+  if (diff < 2 * WEEK)     return '1 week ago'
+  if (diff < MONTH)        return `${Math.floor(diff / WEEK)} weeks ago`
+  if (diff < 2 * MONTH)    return '1 month ago'
+  if (diff < YEAR)         return `${Math.floor(diff / MONTH)} months ago`
+  return `${Math.floor(diff / YEAR)} years ago`
+}
+ 
+/**
+ * Format a date to a readable string.
+ * @example formatDate(new Date(), 'short') → 'May 27, 2026'
+ * @example formatDate(new Date(), 'long')  → 'Wednesday, May 27, 2026 at 3:45 PM'
+ */
+export function formatDate(
+  date: Date | string | number,
+  style: 'short' | 'long' | 'time' = 'short',
+): string {
+  const d = new Date(date)
+  const opts: Intl.DateTimeFormatOptions =
+    style === 'short' ? { year: 'numeric', month: 'long', day: 'numeric' }
+    : style === 'long' ? { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }
+    : { hour: '2-digit', minute: '2-digit' }
+  return new Intl.DateTimeFormat('en-US', opts).format(d)
+}
+ 
+/**
+ * Format a duration in milliseconds to a human-readable string.
+ * @example formatDuration(3723000) → '1h 2m 3s'
+ * @example formatDuration(500)     → '500ms'
+ */
+export function formatDuration(ms: number): string {
+  if (ms < SECOND) return `${ms}ms`
+  if (ms < MINUTE) return `${(ms / SECOND).toFixed(1)}s`
+ 
+  const h = Math.floor(ms / HOUR)
+  const m = Math.floor((ms % HOUR) / MINUTE)
+  const s = Math.floor((ms % MINUTE) / SECOND)
+ 
+  const parts: string[] = []
+  if (h > 0) parts.push(`${h}h`)
+  if (m > 0) parts.push(`${m}m`)
+  if (s > 0) parts.push(`${s}s`)
+  return parts.join(' ')
+}
+ 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 4. NUMBERS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 
+/**
+ * Format bytes to a readable file size string.
+ * @example formatBytes(1536)       → '1.5 KB'
+ * @example formatBytes(1073741824) → '1.0 GB'
+ */
+export function formatBytes(bytes: number, decimals = 1): string {
+  if (bytes === 0) return '0 B'
+  const units = ['B', 'KB', 'MB', 'GB', 'TB']
+  const i = Math.floor(Math.log(bytes) / Math.log(1024))
+  return `${(bytes / Math.pow(1024, i)).toFixed(decimals)} ${units[i]}`
+}
+ 
+/**
+ * Clamp a number between min and max (inclusive).
+ * @example clamp(150, 0, 100) → 100
+ */
+export function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max)
+}
+ 
+/**
+ * Round a number to a given number of decimal places.
+ * @example round(3.14159, 2) → 3.14
+ */
+export function round(value: number, decimals = 2): number {
+  const factor = Math.pow(10, decimals)
+  return Math.round(value * factor) / factor
+}
+ 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 5. OBJECTS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 
+/**
+ * Pick specific keys from an object.
+ * @example pick({ a: 1, b: 2, c: 3 }, ['a', 'c']) → { a: 1, c: 3 }
+ */
+export function pick<T extends object, K extends keyof T>(
+  obj: T,
+  keys: K[],
+): Pick<T, K> {
+  return keys.reduce((acc, key) => {
+    if (key in obj) acc[key] = obj[key]
+    return acc
+  }, {} as Pick<T, K>)
+}
+ 
+/**
+ * Omit specific keys from an object.
+ * @example omit({ a: 1, b: 2, c: 3 }, ['b']) → { a: 1, c: 3 }
+ */
+export function omit<T extends object, K extends keyof T>(
+  obj: T,
+  keys: K[],
+): Omit<T, K> {
+  const keysSet = new Set(keys as string[])
+  return Object.fromEntries(
+    Object.entries(obj).filter(([k]) => !keysSet.has(k)),
+  ) as Omit<T, K>
+}
+ 
+/**
+ * Deep merge two objects. Arrays are replaced (not concatenated).
+ * Later keys win on conflict.
+ */
+export function deepMerge<T extends Record<string, unknown>>(
+  base: T,
+  override: Partial<T>,
+): T {
+  const result = { ...base }
+  for (const key in override) {
+    const bv = base[key]
+    const ov = override[key]
+    if (
+      ov !== null &&
+      typeof ov === 'object' &&
+      !Array.isArray(ov) &&
+      typeof bv === 'object' &&
+      bv !== null &&
+      !Array.isArray(bv)
+    ) {
+      result[key] = deepMerge(
+        bv as Record<string, unknown>,
+        ov as Record<string, unknown>,
+      ) as T[typeof key]
+    } else if (ov !== undefined) {
+      result[key] = ov as T[typeof key]
+    }
+  }
+  return result
+}
+ 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 6. ARRAYS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 
+/**
+ * Remove duplicate values from an array (by value or by key function).
+ * @example unique([1, 2, 2, 3]) → [1, 2, 3]
+ * @example unique(users, u => u.id)
+ */
+export function unique<T>(arr: T[], keyFn?: (item: T) => unknown): T[] {
+  if (!keyFn) return [...new Set(arr)]
+  const seen = new Set<unknown>()
+  return arr.filter(item => {
+    const key = keyFn(item)
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+ 
+/**
+ * Group an array of objects by a key.
+ * @example groupBy(messages, m => m.role)
+ * → { user: [...], assistant: [...] }
+ */
+export function groupBy<T>(
+  arr: T[],
+  keyFn: (item: T) => string,
+): Record<string, T[]> {
+  return arr.reduce<Record<string, T[]>>((acc, item) => {
+    const key = keyFn(item)
+    ;(acc[key] ??= []).push(item)
+    return acc
+  }, {})
+}
+ 
+/**
+ * Split an array into chunks of a given size.
+ * @example chunk([1,2,3,4,5], 2) → [[1,2],[3,4],[5]]
+ */
+export function chunk<T>(arr: T[], size: number): T[][] {
+  const chunks: T[][] = []
+  for (let i = 0; i < arr.length; i += size) {
+    chunks.push(arr.slice(i, i + size))
+  }
+  return chunks
+}
+ 
+/**
+ * Return the last element of an array (or undefined if empty).
+ */
+export function last<T>(arr: T[]): T | undefined {
+  return arr[arr.length - 1]
+}
+ 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 7. ASYNC
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 
+/**
+ * Wait for `ms` milliseconds.
+ * @example await sleep(1000)
+ */
+export function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+ 
+/**
+ * Retry an async function up to `maxAttempts` times with exponential back-off.
+ *
+ * @param fn           — the async function to retry
+ * @param maxAttempts  — maximum number of attempts (default: 3)
+ * @param baseDelayMs  — initial delay in ms, doubles each retry (default: 500)
+ * @param shouldRetry  — optional predicate; return false to stop retrying early
+ *
+ * @example
+ *   const data = await retry(() => fetch('/api/data').then(r => r.json()), 3)
+ */
+export async function retry<T>(
+  fn: () => Promise<T>,
+  maxAttempts = 3,
+  baseDelayMs = 500,
+  shouldRetry?: (err: unknown, attempt: number) => boolean,
+): Promise<T> {
+  let lastError: unknown
+ 
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await fn()
+    } catch (err) {
+      lastError = err
+ 
+      if (attempt === maxAttempts) break
+      if (shouldRetry && !shouldRetry(err, attempt)) break
+ 
+      await sleep(baseDelayMs * Math.pow(2, attempt - 1))
+    }
+  }
+ 
+  throw lastError
+}
+ 
+/**
+ * Debounce a function — delays execution until `wait` ms have passed
+ * since the last call.
+ *
+ * @example
+ *   const saveDebounced = debounce(() => save(), 500)
+ *   input.addEventListener('input', saveDebounced)
+ */
+export function debounce<T extends (...args: unknown[]) => void>(
+  fn: T,
+  wait: number,
+): (...args: Parameters<T>) => void {
+  let timer: ReturnType<typeof setTimeout>
+  return (...args: Parameters<T>) => {
+    clearTimeout(timer)
+    timer = setTimeout(() => fn(...args), wait)
+  }
+}
+ 
+/**
+ * Throttle a function — ensures it's called at most once per `limit` ms.
+ *
+ * @example
+ *   const onScroll = throttle(handleScroll, 100)
+ *   window.addEventListener('scroll', onScroll)
+ */
+export function throttle<T extends (...args: unknown[]) => void>(
+  fn: T,
+  limit: number,
+): (...args: Parameters<T>) => void {
+  let lastCall = 0
+  return (...args: Parameters<T>) => {
+    const now = Date.now()
+    if (now - lastCall >= limit) {
+      lastCall = now
+      fn(...args)
+    }
+  }
+}
+ 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 8. TYPE GUARDS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 
+export const isString  = (v: unknown): v is string  => typeof v === 'string'
+export const isNumber  = (v: unknown): v is number  => typeof v === 'number' && !Number.isNaN(v)
+export const isBoolean = (v: unknown): v is boolean => typeof v === 'boolean'
+export const isObject  = (v: unknown): v is Record<string, unknown> =>
+  v !== null && typeof v === 'object' && !Array.isArray(v)
+ 
+/** Returns true for any value that is not null or undefined. */
+export function isDefined<T>(value: T | null | undefined): value is T {
+  return value !== null && value !== undefined
+}
+ 
+export const isError = (v: unknown): v is Error =>
+  v instanceof Error || (isObject(v) && isString((v as Error).message))
+ 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 9. ERRORS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 
+/**
+ * Coerce any thrown value into an Error instance.
+ * Useful in catch blocks: `catch (e) { throw toError(e) }`
+ */
+export function toError(value: unknown): Error {
+  if (value instanceof Error) return value
+  if (typeof value === 'string') return new Error(value)
+  try { return new Error(JSON.stringify(value)) }
+  catch { return new Error(String(value)) }
+}
+ 
+/**
+ * Return true if an error looks like a Blink auth / 401 error.
+ * Centralises the auth-error detection that was duplicated across App.tsx and ChatPanel.
+ */
+export function isAuthError(err: unknown): boolean {
+  const e = toError(err)
+  return (
+    (isObject(err) &&
+      (err as Record<string, unknown>)?.details &&
+      isObject((err as Record<string, unknown>).details) &&
+      (err as { details: { originalError?: { name?: string } } }).details
+        ?.originalError?.name === 'BlinkAuthError') ||
+    e.message.includes('401') ||
+    e.message.includes('Unauthorized') ||
+    e.message.includes('BlinkAuthError')
+  )
+}
+ 
+/**
+ * Extract a user-friendly message from any error value.
+ * Falls back to a generic message so we never show raw stack traces.
+ */
+export function getUserMessage(err: unknown, fallback = 'Something went wrong. Please try again.'): string {
+  if (!isDefined(err)) return fallback
+  const e = toError(err)
+  // Strip HTTP status codes from messages like "[401] /api/foo — Unauthorized"
+  const clean = e.message.replace(/^\[\d{3}\]\s+[^\s]+\s+—\s+/, '')
+  return clean || fallback
+}
+ 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 10. CLIPBOARD
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 
+/**
+ * Copy text to the clipboard.
+ * Returns true on success, false on failure (e.g. missing permissions).
+ *
+ * @example
+ *   const ok = await copyToClipboard(sandboxUrl)
+ *   toast(ok ? 'Copied!' : 'Copy failed')
+ */
+export async function copyToClipboard(text: string): Promise<boolean> {
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text)
+      return true
+    }
+    // Fallback for older browsers / non-secure contexts
+    const el = document.createElement('textarea')
+    el.value = text
+    el.style.cssText = 'position:fixed;top:-9999px;left:-9999px'
+    document.body.appendChild(el)
+    el.select()
+    const ok = document.execCommand('copy')
+    document.body.removeChild(el)
+    return ok
+  } catch {
+    return false
+  }
+}
+ 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 11. URL
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 
+/**
+ * Build a URL with query parameters from an object.
+ * Skips null / undefined values automatically.
+ *
+ * @example
+ *   buildUrl('/api/messages', { projectId: 'abc', limit: 50 })
+ *   → '/api/messages?projectId=abc&limit=50'
+ */
+export function buildUrl(
+  base: string,
+  params: Record<string, string | number | boolean | null | undefined>,
+): string {
+  const search = new URLSearchParams()
+  for (const [key, value] of Object.entries(params)) {
+    if (isDefined(value)) search.set(key, String(value))
+  }
+  const qs = search.toString()
+  return qs ? `${base}?${qs}` : base
+}
+ 
+/**
+ * Parse the current page's query string into a typed object.
+ * @example parseSearchParams() → { projectId: 'abc', tab: 'chat' }
+ */
+export function parseSearchParams(
+  search = window.location.search,
+): Record<string, string> {
+  return Object.fromEntries(new URLSearchParams(search).entries())
+}

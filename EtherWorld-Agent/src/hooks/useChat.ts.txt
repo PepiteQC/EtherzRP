@@ -1,0 +1,208 @@
+/**
+ * hooks/useChat.ts
+ *
+ * React Query hooks for persisting and retrieving chat messages.
+ *
+ * Hooks:
+ *   useChatMessages(projectId)  — fetch message history for a project
+ *   useSaveMessage()            — persist a single message (de-duped)
+ *   useClearChat(projectId)     — delete all messages for a project
+ *
+ * Design decisions:
+ *   - Messages are stored in ascending order (oldest first) so they render
+ *     top-to-bottom in the ChatPanel without reversing the array.
+ *   - useSaveMessage uses a content+role hash to skip duplicate writes when
+ *     the same message is submitted more than once (e.g. React strict-mode
+ *     double-effect or ChatPanel re-renders).
+ *   - Optimistic inserts make the UI feel instant: the message appears
+ *     immediately, then gets the real id from the server once saved.
+ */
+
+import { useQuery, useMutation, useQueryClient, QueryClient } from '@tanstack/react-query'
+import { apiFetch } from '../lib/blink'
+import { v4 as uuid } from 'uuid'
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export type MessageRole = 'user' | 'assistant' | 'system' | 'tool'
+
+export interface ChatMessage {
+  /** UUID primary key */
+  id: string
+  /** Foreign key → projects.id */
+  projectId: string
+  /** Foreign key → users.id */
+  userId: string
+  /** Who produced this message */
+  role: MessageRole
+  /** Plain text or Markdown content */
+  content: string
+  /** JSON-serialised tool call array (null if no tool calls) */
+  toolCalls: string | null
+  /** ISO 8601 timestamp */
+  createdAt: string
+}
+
+export interface SaveMessageInput {
+  projectId: string
+  userId: string
+  role: MessageRole
+  content: string
+  toolCalls?: string
+}
+
+// ─── Query keys ───────────────────────────────────────────────────────────────
+
+const keys = {
+  byProject: (pid: string) => ['chat', 'messages', pid] as const,
+}
+
+// ─── Base URL ─────────────────────────────────────────────────────────────────
+
+const API = '/api/messages'
+
+// ─── De-duplication helper ────────────────────────────────────────────────────
+// A lightweight fingerprint: first 120 chars of content + role.
+// Good enough to skip re-saves from React strict-mode double-effects.
+function fingerprint(input: SaveMessageInput): string {
+  return `${input.role}::${input.content.slice(0, 120)}`
+}
+
+// Module-level set of already-saved fingerprints.
+// Cleared when the page reloads (which is fine — server is the source of truth).
+const savedFingerprints = new Set<string>()
+
+// ─── Hooks ────────────────────────────────────────────────────────────────────
+
+/**
+ * Fetch the full message history for a project, ordered oldest → newest.
+ *
+ * Disabled when `projectId` is falsy (no project selected).
+ * Does not auto-refetch — messages are append-only and ChatPanel manages
+ * the live state via useAgent; DB is only for persistence across sessions.
+ */
+export function useChatMessages(projectId: string | undefined) {
+  return useQuery<ChatMessage[]>({
+    queryKey: keys.byProject(projectId ?? ''),
+    queryFn:  () =>
+      apiFetch<ChatMessage[]>(`${API}?projectId=${projectId}&orderBy=createdAt&order=asc`),
+    enabled:  Boolean(projectId),
+    // Don't refetch — ChatPanel owns the live state.
+    // Only the initial load (cache miss) hits the server.
+    staleTime: Infinity,
+    // Keep previous data visible during background fetches
+    placeholderData: (prev: ChatMessage[] | undefined) => prev,
+  })
+}
+
+/**
+ * Persist a single chat message to the server.
+ *
+ * Features:
+ *   - De-duplicates by content fingerprint — safe to call from useEffect.
+ *   - Optimistic insert so the message appears instantly in the query cache.
+ *   - Replaces the temporary record with the real one on success.
+ *
+ * @example
+ *   const save = useSaveMessage()
+ *   save.mutate({ projectId, userId, role: 'user', content: 'Hello' })
+ */
+export function useSaveMessage() {
+  const qc = useQueryClient()
+
+  return useMutation<ChatMessage, Error, SaveMessageInput>({
+    mutationFn: async input => {
+      // ── De-duplication guard ─────────────────────────────────────────────
+      const fp = fingerprint(input)
+      if (savedFingerprints.has(fp)) {
+        // Return a synthetic record so callers don't have to handle undefined
+        return buildOptimisticMessage(input)
+      }
+      savedFingerprints.add(fp)
+
+      return apiFetch<ChatMessage>(API, {
+        method: 'POST',
+        body: {
+          projectId: input.projectId,
+          userId:    input.userId,
+          role:      input.role,
+          content:   input.content,
+          toolCalls: input.toolCalls ?? null,
+        },
+      })
+    },
+
+    onMutate: async input => {
+      const fp = fingerprint(input)
+
+      // Already in cache — do nothing
+      if (savedFingerprints.has(fp)) return {}
+
+      await qc.cancelQueries({ queryKey: keys.byProject(input.projectId) })
+      const previous = qc.getQueryData<ChatMessage[]>(keys.byProject(input.projectId))
+
+      const optimistic = buildOptimisticMessage(input)
+      qc.setQueryData<ChatMessage[]>(keys.byProject(input.projectId), old =>
+        old ? [...old, optimistic] : [optimistic],
+      )
+
+      return { previous, optimistic }
+    },
+
+    onSuccess: (saved, input, ctx: any) => {
+      qc.setQueryData<ChatMessage[]>(keys.byProject(input.projectId), old =>
+        old?.map(m => (m.id === ctx?.optimistic?.id ? saved : m)) ?? [saved],
+      )
+    },
+
+    onError: (_err, input, ctx: any) => {
+      if (ctx?.previous !== undefined) {
+        qc.setQueryData(keys.byProject(input.projectId), ctx.previous)
+      }
+      // Remove fingerprint so a retry is allowed
+      savedFingerprints.delete(fingerprint(input))
+    },
+  })
+}
+
+/**
+ * Delete all messages for a project (e.g. "Clear chat" button).
+ * Removes them from the query cache immediately.
+ */
+export function useClearChat() {
+  const qc = useQueryClient()
+
+  return useMutation<void, Error, { projectId: string }>({
+    mutationFn: ({ projectId }) =>
+      apiFetch<void>(`${API}?projectId=${projectId}`, { method: 'DELETE' }),
+
+    onMutate: async ({ projectId }) => {
+      await qc.cancelQueries({ queryKey: keys.byProject(projectId) })
+      const previous = qc.getQueryData<ChatMessage[]>(keys.byProject(projectId))
+      qc.setQueryData<ChatMessage[]>(keys.byProject(projectId), [])
+      // Clear fingerprints for this project so fresh messages can be saved
+      savedFingerprints.clear()
+      return { previous }
+    },
+
+    onError: (_err, { projectId }, ctx: any) => {
+      if (ctx?.previous !== undefined) {
+        qc.setQueryData(keys.byProject(projectId), ctx.previous)
+      }
+    },
+  })
+}
+
+// ─── Internal ─────────────────────────────────────────────────────────────────
+
+function buildOptimisticMessage(input: SaveMessageInput): ChatMessage {
+  return {
+    id:        `tmp_${uuid()}`,
+    projectId: input.projectId,
+    userId:    input.userId,
+    role:      input.role,
+    content:   input.content,
+    toolCalls: input.toolCalls ?? null,
+    createdAt: new Date().toISOString(),
+  }
+}
