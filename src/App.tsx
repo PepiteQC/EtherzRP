@@ -259,7 +259,7 @@ export default function App() {
             onModeChange={setMode}
             onSaveStatus={setSaveStatus}
             onNearBuilding={setNearBuilding}
-            onInteriorPrompt={onInteriorPrompt}
+            onInteriorPrompt={setInteriorPrompt}
             onIsInInterior={setIsInInterior}
             initialSave={activeSave}
             isNewPlayer={isNewPlayer}
@@ -273,32 +273,21 @@ export default function App() {
                 entities={1247}
                 mode={isInInterior ? 'spectator' : 'play'}
                 weather="clear"
-                playerStats={{
-                  health:    100,
-                  maxHealth: 100,
-                  stamina:   100,
-                  maxStamina: 100,
-                  armor:     0,
-                  speed:     speed,
-                  state:     mode === 'driving' ? 'sprinting' : 'walking',
-                  grounded:  true,
-                  position:  [0, 0, 0],
-                }}
-                worldInfo={{
-                  location:    zone,
-                  sector:      isInInterior ? 'Intérieur' : 'Extérieur',
-                  nearestPOI:  nearBuilding?.name ?? 'Aucun',
-                  distancePOI: 0,
-                  time:        new Date().toLocaleTimeString('fr-CA', { hour: '2-digit', minute: '2-digit' }),
-                  day:         1,
-                  temperature: 18,
-                }}
-                isAdminOpen={adminOpen}
-                onToggleAdmin={() => setAdminOpen(prev => !prev)}
-                onToggleEditor={() => {
-                  setAdminOpen(true)
-                  setAdminTool('editor')
-                }}
+                health={100}
+                armor={0}
+                stamina={100}
+                cash={money}
+                bank={0}
+                job={activeJob?.title ?? 'Citoyen'}
+                rank={mode === 'driving' ? 'En véhicule' : 'À pied'}
+                location={zone}
+                sector={isInInterior ? 'Intérieur' : 'Extérieur'}
+                destination={nearBuilding?.name ?? 'Route 138'}
+                time={new Date().toLocaleTimeString('fr-CA', { hour: '2-digit', minute: '2-digit' })}
+                vehicle={mode === 'driving' ? { name: 'Véhicule', speedKmh: Math.round(Math.abs(speed) * 180), fuel: 80, engineOn: true } : undefined}
+                interaction={interiorPrompt ?? undefined}
+                alerts={notification ? [notification] : []}
+                isAdmin={isOwner || adminOpen}
               />
             </div>
           </div>

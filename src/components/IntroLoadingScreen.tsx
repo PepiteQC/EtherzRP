@@ -62,7 +62,7 @@ export default function IntroLoadingScreen({ durationMs = 3200 }: IntroLoadingSc
           letterSpacing: 5,
           textShadow: '0 0 24px rgba(56,189,248,0.42), 0 8px 32px rgba(0,0,0,0.65)',
         }}>
-          ETHERWORLD
+          etherzRP
         </div>
         <div style={{
           marginTop: 6,

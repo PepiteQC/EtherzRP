@@ -86,11 +86,11 @@ export const ALL_ZONES = [
   { zMin:  460, zMax:  600, name: 'Sainte-Geneviève-de-Batiscan' },
   { zMin:  600, zMax:  750, name: 'Trois-Rivières — Approche Route 138' },
   { zMin:  750, zMax:  800, name: 'Trois-Rivières — Centre' },
-  { zMin:  800, zMax:  950, name: '🏙️ EtherWorld — Centre-Ville' },
+  { zMin:  800, zMax:  950, name: '🏙️ etherzRP — Centre-Ville' },
 ] as const
 
 function resolveZone(z: number): string {
-  if (z > CITY_ENTRY_Z) return '🏙️ EtherWorld — Centre-Ville'
+  if (z > CITY_ENTRY_Z) return '🏙️ etherzRP — Centre-Ville'
   for (const zone of ALL_ZONES) {
     if (z >= zone.zMin && z < zone.zMax) return zone.name
   }

@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 const LINES = [
   { delay: 0.5, text: 'Route 138 — Portneuf, Québec' },
   { delay: 2.5, text: 'Un matin de novembre...' },
-  { delay: 4.5, text: 'EtherWorld City vous attend...' },
+  { delay: 4.5, text: 'etherzRP vous attend...' },
   { delay: 6.5, text: '' },
 ]
 

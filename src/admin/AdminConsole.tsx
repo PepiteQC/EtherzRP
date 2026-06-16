@@ -119,7 +119,7 @@ export default function AdminConsole({
           <div className="p-8">
             <div className="flex justify-between mb-8">
               <div>
-                <div className="text-3xl font-bold tracking-tighter">ETHERWORLD v2.0</div>
+                <div className="text-3xl font-bold tracking-tighter">etherzRP v2.0</div>
                 <div className="text-white/50">Fusion Real-shit × Official PC</div>
               </div>
               <button onClick={() => setIsPaused(!isPaused)} className="flex items-center gap-2 px-4 py-2 rounded bg-white/10">
@@ -154,7 +154,7 @@ export default function AdminConsole({
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 bg-[#1a0033] border-b border-[#ff00aa]/50">
             <div className="flex items-center gap-3">
-              <div className="font-black text-2xl tracking-[-1.5px]">ETHERWORLD</div>
+              <div className="font-black text-2xl tracking-[-1.5px]">etherzRP</div>
               <div className="text-xs px-3 py-0.5 rounded-full bg-white/10">v2.0 FUSION</div>
             </div>
             <button onClick={onClose} className="w-9 h-9 flex items-center justify-center hover:bg-white/10 rounded-full">
@@ -183,7 +183,7 @@ export default function AdminConsole({
 
           {/* Footer */}
           <div className="px-6 py-3 text-xs border-t border-white/10 bg-[#0f001f] flex justify-between text-white/50">
-            <div>Real-shit tools intégrés • EtherWorld v2.0</div>
+            <div>Real-shit tools intégrés • etherzRP v2.0</div>
             <div>ESC pour fermer • F2 = Editor • F3 = Agent • F4 = Weather</div>
           </div>
         </motion.div>

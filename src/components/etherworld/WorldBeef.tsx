@@ -431,8 +431,8 @@ export default memo(function WorldBeef() {
         <NeonBillboard
           position={[-18, 0, -105]}
           rotation={[0, 0, 0]}
-          title="ETHERWORLD CITY"
-          subtitle="RP QUÉBEC · CONNECTÉ"
+          title="etherzRP CITY"
+          subtitle="QUÉBEC RP · CONNECTÉ"
           color="#58e6ff"
         />
         <NeonBillboard

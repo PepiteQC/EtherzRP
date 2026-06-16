@@ -75,7 +75,7 @@ export function ServerStatusHUD({
 
             <div>
               <div className="text-sm font-semibold tracking-wide">
-                EtherWorld Server
+                etherzRP Server
               </div>
               <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">
                 RP Quebec Runtime

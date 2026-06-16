@@ -401,7 +401,7 @@ function Overlay({ showTitle, onEnter, onSkip }: OverlayProps) {
                   '0 0 18px rgba(0,229,255,0.9), 0 0 48px rgba(124,77,255,0.6)',
               }}
             >
-              ETHERWORLD
+              etherzRP
             </motion.h1>
             <motion.p
               initial={{ opacity: 0 }}

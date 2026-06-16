@@ -11,8 +11,7 @@
  * Props : exactement celles passées par App.tsx.
  */
 
-import { Suspense, useState } from 'react'
-import { Canvas } from '@react-three/fiber'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import EtherworldDashboardScene from './EtherworldDashboardScene'
 import {
@@ -69,16 +68,7 @@ export default function EtherworldDashboard({
     <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', background: '#060814' }}>
       {/* ── Fond 3D ─────────────────────────────────────────── */}
       <div style={{ position: 'absolute', inset: 0 }}>
-        <Canvas
-          shadows
-          dpr={[1, 1.75]}
-          camera={{ position: [0, 28, 1030], fov: 55, near: 0.1, far: 400 }}
-          gl={{ antialias: true, powerPreference: 'high-performance' }}
-        >
-          <Suspense fallback={null}>
-            <EtherworldDashboardScene />
-          </Suspense>
-        </Canvas>
+        <EtherworldDashboardScene />
       </div>
 
       {/* Voile sombre pour lisibilité */}
@@ -118,7 +108,7 @@ export default function EtherworldDashboard({
             textShadow: '0 0 18px rgba(0,229,255,0.8), 0 0 48px rgba(124,77,255,0.5)',
           }}
         >
-          ETHERWORLD
+          etherzRP
         </motion.h1>
         <p
           style={{
@@ -129,7 +119,7 @@ export default function EtherworldDashboard({
             fontSize: 'clamp(0.8rem, 2.4vw, 1.2rem)',
           }}
         >
-          QUÉBEC · RP
+          Québec RP
         </p>
 
         <AnimatePresence mode="wait">
@@ -143,10 +133,8 @@ export default function EtherworldDashboard({
             >
               <MenuButton
                 primary
-                disabled={!hasCharacter}
                 onClick={onJoin}
-                label={savedGame ? '▶  CONTINUER' : '▶  JOUER'}
-                hint={hasCharacter ? undefined : 'Crée un personnage d\u2019abord'}
+                label={savedGame ? '▶  CONTINUER DANS etherzRP' : '▶  ENTRER DANS etherzRP'}
               />
               <MenuButton
                 onClick={() => setCreating(true)}
@@ -217,7 +205,7 @@ export default function EtherworldDashboard({
         </AnimatePresence>
 
         <p style={{ position: 'absolute', bottom: 18, opacity: 0.5, fontSize: 12, letterSpacing: '0.2em' }}>
-          ETHERWORLD RP QUÉBEC · v1.0
+          etherzRP · Québec · v1.0
         </p>
       </div>
     </div>

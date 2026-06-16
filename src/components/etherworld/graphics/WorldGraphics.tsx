@@ -8,6 +8,7 @@
  */
 
 import React, { useMemo } from 'react';
+import * as THREE from 'three';
 import { useStore } from '@/lib/etherworld/game-store';
 import { PORTNEUF_ROADS } from '@/utils/roadNetwork';
 import { resolveTimePhase, getAtmospherePalette, type TimePhase } from './visualAtmosphere';

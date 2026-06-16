@@ -99,6 +99,7 @@ const WORLD_ZONES: WorldZone[] = [
 const ACCESS_LABELS: Record<CardAccessLevel, string> = {
   guest: 'Invité',
   resident: 'Résident',
+  staff: 'Personnel',
   vip: 'VIP',
   admin: 'Admin',
 }
@@ -106,11 +107,13 @@ const ACCESS_LABELS: Record<CardAccessLevel, string> = {
 const ACCESS_DESCRIPTIONS: Record<CardAccessLevel, string> = {
   guest: 'Zones publiques uniquement',
   resident: 'Accès résidentiel complet',
+  staff: 'Accès opérationnel du personnel',
   vip: 'Accès premium et exclusif',
   admin: 'Accès total au serveur',
 }
 
 const WEATHER_STATES = ['☀️ Ensoleillé', '⛅ Nuageux', '🌧️ Pluie', '🌨️ Neige', '🌫️ Brouillard', '🌙 Nuit claire'] as const
+type WeatherStateLabel = (typeof WEATHER_STATES)[number]
 
 // ════════════════════════════════════════════════════════════════════════════
 // UTILITAIRES
@@ -209,7 +212,7 @@ function usePlayerStats() {
 // ════════════════════════════════════════════════════════════════════════════
 
 function useWeather() {
-  const [weather, setWeather] = useState(WEATHER_STATES[0])
+  const [weather, setWeather] = useState<WeatherStateLabel>(WEATHER_STATES[0])
   const [temperature, setTemperature] = useState(-5)
 
   useEffect(() => {

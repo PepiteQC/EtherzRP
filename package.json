@@ -1,7 +1,7 @@
 {
-  "name": "etherworld-official-pc",
+  "name": "etherzrp",
   "version": "0.1.0",
-  "description": "EtherWorld Official PC — jeu RP 3D Québec/Route 138 avec React, Vite et Three.js.",
+  "description": "etherzRP — jeu RP 3D Québec/Route 138 avec React, Vite et Three.js.",
   "type": "module",
   "private": true,
   "scripts": {

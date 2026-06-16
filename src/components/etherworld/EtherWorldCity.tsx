@@ -113,7 +113,7 @@ const CityEntranceSign = memo(function CityEntranceSign() {
         anchorX="center"
         anchorY="middle"
       >
-        ETHERWORLD — VILLE
+        etherzRP — VILLE
       </Text>
       <Text
         position={[0, 4.5, 0.12]}

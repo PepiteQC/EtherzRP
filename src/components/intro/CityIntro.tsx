@@ -17,7 +17,7 @@ const sceneGradients = [
 ]
 
 const scenes = [
-  { gradient: sceneGradients[0], caption: 'Bienvenue à EtherWorld', icon: '🏙️' },
+  { gradient: sceneGradients[0], caption: 'Bienvenue à etherzRP', icon: '🏙️' },
   { gradient: sceneGradients[1], caption: 'Les rues vivent la nuit', icon: '🌃' },
   { gradient: sceneGradients[2], caption: 'Un monde à explorer', icon: '🗺️' },
   { gradient: sceneGradients[3], caption: 'Protéger et servir', icon: '🚔' },

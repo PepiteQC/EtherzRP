@@ -5,7 +5,7 @@ import { resolve } from 'path'
 
 export default defineConfig({
   // ✅ Base pour GitHub Pages
-  base: '/EtherWorld-Official-PC/',
+  base: '/etherzRP/',
 
   plugins: [
     react(),
