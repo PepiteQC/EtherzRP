@@ -17,6 +17,7 @@
     "concurrently": "latest",
     "cors": "^2.8.6",
     "express": "^5.2.1",
+    "lucide-react": "^1.20.0",
     "react": "latest",
     "react-dom": "latest",
     "sharp": "^0.35.1",
