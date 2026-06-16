@@ -1,4 +1,5 @@
 /* PhoneUI.module.css — EtherWorld RP */
+
 .phoneOverlay {
   position: fixed;
   inset: 0;
@@ -6,45 +7,54 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding-right: 24px;
+  padding: 24px;
   pointer-events: none;
 }
 
 .phone {
-  pointer-events: all;
-  width: 260px;
-  height: 520px;
+  pointer-events: auto;
+  width: min(260px, calc(100vw - 32px));
+  height: min(520px, calc(100vh - 48px));
   background: linear-gradient(180deg, #0a0f1c 0%, #080c18 100%);
   border: 1.5px solid rgba(80, 140, 220, 0.5);
   border-radius: 28px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 0 40px rgba(40, 100, 220, 0.2), 0 20px 60px rgba(0, 0, 0, 0.7);
-  font-family: monospace;
+  box-shadow:
+    0 0 40px rgba(40, 100, 220, 0.2),
+    0 20px 60px rgba(0, 0, 0, 0.7);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   position: relative;
-  bottom: -20px;
-  animation: phoneSlideIn 0.25s ease;
+  animation: phoneSlideIn 0.25s ease both;
 }
 
 @keyframes phoneSlideIn {
-  from { opacity: 0; transform: translateY(30px) scale(0.95); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
-/* Notch */
 .notch {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
   padding: 8px 16px;
   background: rgba(5, 10, 25, 0.9);
   border-bottom: 1px solid rgba(40, 80, 140, 0.3);
+  flex-shrink: 0;
 }
 
 .time {
   font-size: 11px;
-  font-weight: bold;
+  font-weight: 700;
   color: #c0d8f0;
   letter-spacing: 2px;
 }
@@ -61,7 +71,6 @@
   color: #4adb8a;
 }
 
-/* Screen */
 .screen {
   flex: 1;
   overflow-y: auto;
@@ -70,12 +79,36 @@
   scrollbar-color: rgba(60, 100, 180, 0.4) transparent;
 }
 
-/* Home grid */
+.screen::-webkit-scrollbar {
+  width: 6px;
+}
+
+.screen::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.screen::-webkit-scrollbar-thumb {
+  background: rgba(60, 100, 180, 0.4);
+  border-radius: 999px;
+}
+
 .homeGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
   padding: 8px;
+}
+
+.appIcon,
+.numKey,
+.callBtn,
+.sendBtn,
+.bankBtn,
+.homeBtn {
+  font: inherit;
+  border: 0;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .appIcon {
@@ -88,14 +121,29 @@
   cursor: pointer;
   text-align: center;
   line-height: 1.8;
-  transition: all 0.15s;
-  font-family: monospace;
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .appIcon:hover {
   background: rgba(25, 45, 90, 0.9);
   border-color: rgba(80, 130, 220, 0.6);
   transform: scale(1.04);
+}
+
+.appIcon:focus-visible,
+.numKey:focus-visible,
+.callBtn:focus-visible,
+.sendBtn:focus-visible,
+.bankBtn:focus-visible,
+.homeBtn:focus-visible,
+.dialInput:focus-visible,
+.smsInput:focus-visible,
+.smsTextarea:focus-visible {
+  outline: 2px solid #8acfff;
+  outline-offset: 2px;
 }
 
 .emergency {
@@ -109,7 +157,6 @@
   border-color: rgba(220, 80, 80, 0.8) !important;
 }
 
-/* Dialer */
 .dialer {
   display: flex;
   flex-direction: column;
@@ -119,17 +166,17 @@
 
 .dialInput {
   width: 100%;
+  box-sizing: border-box;
   background: rgba(10, 20, 45, 0.8);
   border: 1px solid rgba(60, 100, 180, 0.4);
   border-radius: 6px;
   color: #8acfff;
-  font-family: monospace;
+  font-family: inherit;
   font-size: 16px;
-  font-weight: bold;
+  font-weight: 700;
   padding: 10px 14px;
   text-align: center;
   letter-spacing: 3px;
-  outline: none;
 }
 
 .numpad {
@@ -144,12 +191,14 @@
   border: 1px solid rgba(50, 90, 160, 0.35);
   border-radius: 50%;
   color: #c0d8f0;
-  font-family: monospace;
   font-size: 16px;
-  font-weight: bold;
+  font-weight: 700;
   padding: 12px;
   cursor: pointer;
-  transition: all 0.1s;
+  transition:
+    background 0.1s ease,
+    border-color 0.1s ease,
+    transform 0.1s ease;
   aspect-ratio: 1;
   display: flex;
   align-items: center;
@@ -161,40 +210,50 @@
   border-color: rgba(80, 130, 220, 0.6);
 }
 
+.numKey:active,
+.appIcon:active,
+.callBtn:active,
+.sendBtn:active,
+.bankBtn:active,
+.homeBtn:active {
+  transform: scale(0.97);
+}
+
 .callBtn {
   width: 100%;
   background: rgba(15, 80, 30, 0.8);
   border: 1.5px solid rgba(50, 200, 80, 0.6);
   border-radius: 8px;
   color: #60ef90;
-  font-family: monospace;
   font-size: 13px;
   padding: 12px;
   cursor: pointer;
   letter-spacing: 2px;
-  transition: all 0.15s;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
 }
 
 .callBtn:hover {
   background: rgba(25, 110, 45, 0.9);
 }
 
-/* SMS App */
 .smsApp {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.smsInput, .smsTextarea {
+.smsInput,
+.smsTextarea {
   background: rgba(10, 20, 45, 0.8);
   border: 1px solid rgba(60, 100, 180, 0.4);
   border-radius: 6px;
   color: #c0d8f0;
-  font-family: monospace;
+  font-family: inherit;
   font-size: 11px;
   padding: 8px 12px;
-  outline: none;
   width: 100%;
   box-sizing: border-box;
 }
@@ -209,19 +268,19 @@
   border: 1.5px solid rgba(60, 120, 220, 0.6);
   border-radius: 6px;
   color: #8acfff;
-  font-family: monospace;
   font-size: 11px;
   padding: 8px 16px;
   cursor: pointer;
   letter-spacing: 2px;
-  transition: all 0.15s;
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
 }
 
 .sendBtn:hover {
   background: rgba(30, 80, 160, 0.9);
 }
 
-/* Bank App */
 .bankApp {
   display: flex;
   flex-direction: column;
@@ -240,7 +299,7 @@
 
 .bankApp p {
   font-size: 18px;
-  font-weight: bold;
+  font-weight: 700;
   color: #4adb8a;
   margin: 0;
 }
@@ -251,12 +310,14 @@
   border: 1px solid rgba(60, 100, 180, 0.35);
   border-radius: 6px;
   color: #8acfff;
-  font-family: monospace;
   font-size: 11px;
   padding: 10px;
   cursor: pointer;
   letter-spacing: 2px;
-  transition: all 0.15s;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
 }
 
 .bankBtn:hover {
@@ -264,14 +325,15 @@
   border-color: rgba(80, 130, 220, 0.6);
 }
 
-/* Bottom bar */
 .bottomBar {
   display: flex;
   justify-content: space-around;
   align-items: center;
+  gap: 8px;
   padding: 8px 16px;
   border-top: 1px solid rgba(40, 80, 140, 0.3);
   background: rgba(5, 10, 25, 0.9);
+  flex-shrink: 0;
 }
 
 .homeBtn {
@@ -279,15 +341,42 @@
   border: 1px solid rgba(60, 100, 180, 0.35);
   border-radius: 6px;
   color: #6090c0;
-  font-family: monospace;
   font-size: 10px;
   padding: 6px 14px;
   cursor: pointer;
   letter-spacing: 1px;
-  transition: all 0.15s;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
 }
 
 .homeBtn:hover {
   background: rgba(20, 40, 80, 0.6);
   color: #8abde0;
+}
+
+@media (max-width: 480px) {
+  .phoneOverlay {
+    justify-content: center;
+    padding: 12px;
+  }
+
+  .phone {
+    width: min(260px, 100%);
+    height: min(520px, calc(100vh - 24px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .phone,
+  .appIcon,
+  .numKey,
+  .callBtn,
+  .sendBtn,
+  .bankBtn,
+  .homeBtn {
+    animation: none;
+    transition: none;
+  }
 }

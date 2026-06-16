@@ -1,213 +1,367 @@
-import { create } from 'zustand';
+'use client'
 
-export type ObjectCategory = 
-  | 'meubles' 
-  | 'cuisine' 
-  | 'sdb' 
-  | 'structures' 
-  | 'exterieur' 
-  | 'routes' 
-  | 'deco' 
-  | 'eclairage' 
-  | 'formes' 
-  | 'prison' 
-  | 'hotel' 
-  | 'commerce' 
-  | 'electronique' 
-  | 'special';
+import { create } from 'zustand'
+import type {
+  InventoryItem,
+  InventorySlot,
+  InventoryConfig,
+  PlayerCard,
+  RoomConfig,
+  Light,
+  CardAccessLevel,
+  PlacedObject,
+  ContextAction,
+  DragPreviewState,
+  ComputerState,
+  ShopItem,
+} from './types'
 
-export interface PlacedObject {
-  id: string;
-  modelType: string;
-  position: [number, number, number];
-  rotation: number;
-  scale: number;
-  color: string;
-  category: ObjectCategory;
-  doorOpen?: boolean;
+interface EtherWorldStore {
+  roomConfig: RoomConfig
+  playerCard: PlayerCard | null
+
+  lights: Record<string, Light>
+  toggleLight: (id: string) => void
+
+  showNotification: string | null
+  setNotification: (msg: string | null) => void
+
+  inventorySlots: InventorySlot[]
+  inventoryConfig: InventoryConfig
+  inventoryOpen: boolean
+  setInventoryOpen: (open: boolean) => void
+  selectedSlot: number | null
+  selectSlot: (slotId: number | null) => void
+  addItem: (item: InventoryItem) => boolean
+  removeItem: (slotId: number) => boolean
+  moveItem: (fromSlot: number, toSlot: number) => boolean
+  getTotalWeight: () => number
+  getCashAmount: () => number
+  spendCash: (amount: number) => boolean
+
+  editorMode: boolean
+  toggleEditorMode: () => void
+  placedObjects: PlacedObject[]
+  addPlacedObject: (obj: PlacedObject) => void
+  removePlacedObject: (id: string) => void
+  updatePlacedObject: (id: string, updates: Partial<PlacedObject>) => void
+  selectedObject: string | null
+  setSelectedObject: (id: string | null) => void
+
+  dragPreview: DragPreviewState
+  setDragPreview: (preview: Partial<DragPreviewState>) => void
+  clearDragPreview: () => void
+
+  contextMenu: {
+    visible: boolean
+    x: number
+    y: number
+    objectId: string
+    objectType: string
+    actions: ContextAction[]
+  } | null
+  showContextMenu: (menu: NonNullable<EtherWorldStore['contextMenu']>) => void
+  hideContextMenu: () => void
+
+  playerAction: 'standing' | 'sitting' | 'lying' | 'leaning' | 'showering'
+  setPlayerAction: (action: EtherWorldStore['playerAction']) => void
+
+  computerState: ComputerState
+  setComputerState: (state: Partial<ComputerState>) => void
+  toggleComputer: () => void
+
+  shopOpen: boolean
+  setShopOpen: (open: boolean) => void
+  shopCart: ShopItem[]
+  addToCart: (item: ShopItem) => void
+  removeFromCart: (itemId: string) => void
+  clearCart: () => void
+  purchaseCart: () => boolean
+
+  showerActive: boolean
+  setShowerActive: (active: boolean) => void
+
+  windowsOpen: Record<string, boolean>
+  toggleWindow: (id: string) => void
 }
 
-export interface ChatMessage {
-  id: string;
-  sender: string;
-  text: string;
-  timestamp: number;
-  type: 'chat' | 'system' | 'admin';
-}
+const createEmptyInventory = (): InventorySlot[] =>
+  Array.from({ length: 32 }, (_, i) => ({
+    slotId: i,
+    item: null,
+    locked: false,
+  }))
 
-export interface GameState {
-  sessionActive: boolean;
-  isAdmin: boolean;
-  isGodMode: boolean;
-  buildMode: boolean;
-  selectedModelType: string | null;
-  selectedCategory: ObjectCategory | null;
-  placedObjects: PlacedObject[];
-  selectedPlacedId: string | null;
-  ghostPosition: [number, number, number] | null;
-  ghostRotation: number;
-  ghostScale: number;
-  playerPos: [number, number, number];
-  flyMode: boolean;
-  chatOpen: boolean;
-  chatMessages: ChatMessage[];
-  adminOpen: boolean;
-  timeOfDay: number;
-  weather: 'clear' | 'rain' | 'snow' | 'fog';
-  animatingDoors: Record<string, number>;
-  
-  // Corridor/Room states
-  currentView: 'building' | 'corridor' | 'room';
-  corridorApartments: any[];
-  lights: Record<string, boolean>;
-}
+export const useEtherWorldStore = create<EtherWorldStore>((set, get) => ({
+  roomConfig: {
+    roomNumber: 'A-1-01',
+    floor: 1,
+    type: 'SUITE',
+  },
 
-interface GameActions {
-  set: (partial: Partial<GameState>) => void;
-  addPlacedObject: (obj: Omit<PlacedObject, 'id'>) => void;
-  removePlacedObject: (id: string) => void;
-  updatePlacedObject: (id: string, updates: Partial<PlacedObject>) => void;
-  toggleDoor: (id: string) => void;
-  selectPlacedObject: (id: string | null) => void;
-  setGhostPosition: (pos: [number, number, number] | null) => void;
-  setGhostRotation: (rot: number) => void;
-  rotateGhost: () => void;
-  addChatMessage: (sender: string, text: string, type?: ChatMessage['type']) => void;
-  toggleBuildMode: () => void;
-  setSelectedModelType: (type: string | null, category?: ObjectCategory) => void;
-  setSessionActive: (active: boolean) => void;
-  toggleGodMode: () => void;
-  toggleFlyMode: () => void;
-  setPlayerPos: (pos: [number, number, number]) => void;
-  setTimeOfDay: (h: number) => void;
-  setWeather: (w: 'clear' | 'rain' | 'snow' | 'fog') => void;
-  setAnimatingDoor: (id: string, progress: number) => void;
-  setCurrentView: (view: 'building' | 'corridor' | 'room') => void;
-}
+  playerCard: {
+    id: 'card_001',
+    level: 'admin' as CardAccessLevel,
+    name: 'Super Admin',
+    issueDate: Date.now(),
+    expiryDate: Date.now() + 365 * 24 * 60 * 60 * 1000,
+  },
 
-const uid = () => `obj_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  lights: {
+    ceiling: { id: 'ceiling', isOn: true, intensity: 1.5, color: '#fff5e6' },
+    desk: { id: 'desk', isOn: true, intensity: 0.8, color: '#fef3c7' },
+    neon: { id: 'neon', isOn: true, intensity: 0.8, color: '#8b5cf6' },
+    bathroom: { id: 'bathroom', isOn: true, intensity: 1, color: '#ffffff' },
+    tv: { id: 'tv', isOn: false, intensity: 0.4, color: '#3b82f6' },
+    bed: { id: 'bed', isOn: true, intensity: 0.4, color: '#8b5cf6' },
+  },
 
-export const useGameState = create<GameState & GameActions>((set, get) => ({
-  sessionActive: false,
-  isAdmin: true,
-  isGodMode: false,
-  buildMode: false,
-  selectedModelType: null,
-  selectedCategory: null,
+  toggleLight: (id) =>
+    set((state) => {
+      const light = state.lights[id]
+      if (!light) return state
+
+      return {
+        lights: {
+          ...state.lights,
+          [id]: { ...light, isOn: !light.isOn },
+        },
+      }
+    }),
+
+  showNotification: null,
+  setNotification: (msg) => set({ showNotification: msg }),
+
+  inventoryConfig: { maxSlots: 32, maxWeight: 50 },
+  inventorySlots: createEmptyInventory(),
+  inventoryOpen: false,
+  setInventoryOpen: (open) => set({ inventoryOpen: open }),
+  selectedSlot: null,
+  selectSlot: (slotId) => set({ selectedSlot: slotId }),
+
+  addItem: (item) => {
+    const state = get()
+
+    if (state.getTotalWeight() + item.weight * item.quantity > state.inventoryConfig.maxWeight) {
+      return false
+    }
+
+    if (item.stackable) {
+      const existingSlot = state.inventorySlots.find(
+        (slot) => slot.item?.id === item.id && slot.item.quantity < item.maxStack
+      )
+
+      if (existingSlot?.item) {
+        set((state) => ({
+          inventorySlots: state.inventorySlots.map((slot) =>
+            slot.slotId === existingSlot.slotId
+              ? {
+                  ...slot,
+                  item: {
+                    ...existingSlot.item!,
+                    quantity: Math.min(
+                      existingSlot.item!.quantity + item.quantity,
+                      existingSlot.item!.maxStack
+                    ),
+                  },
+                }
+              : slot
+          ),
+        }))
+        return true
+      }
+    }
+
+    const emptySlot = state.inventorySlots.find((slot) => !slot.locked && !slot.item)
+    if (!emptySlot) return false
+
+    set((state) => ({
+      inventorySlots: state.inventorySlots.map((slot) =>
+        slot.slotId === emptySlot.slotId ? { ...slot, item } : slot
+      ),
+    }))
+
+    return true
+  },
+
+  removeItem: (slotId) => {
+    set((state) => ({
+      inventorySlots: state.inventorySlots.map((slot) =>
+        slot.slotId === slotId ? { ...slot, item: null } : slot
+      ),
+    }))
+    return true
+  },
+
+  moveItem: (fromSlot, toSlot) => {
+    const state = get()
+    const from = state.inventorySlots.find((slot) => slot.slotId === fromSlot)
+    const to = state.inventorySlots.find((slot) => slot.slotId === toSlot)
+
+    if (!from || !to || from.locked || to.locked || !from.item) return false
+
+    set((state) => ({
+      inventorySlots: state.inventorySlots.map((slot) => {
+        if (slot.slotId === fromSlot) return { ...slot, item: to.item }
+        if (slot.slotId === toSlot) return { ...slot, item: from.item }
+        return slot
+      }),
+    }))
+
+    return true
+  },
+
+  getTotalWeight: () =>
+    get().inventorySlots.reduce(
+      (total, slot) => total + (slot.item ? slot.item.weight * slot.item.quantity : 0),
+      0
+    ),
+
+  getCashAmount: () => {
+    const cashSlot = get().inventorySlots.find((slot) => slot.item?.id === 'cash')
+    return cashSlot?.item?.quantity ?? 0
+  },
+
+  spendCash: (amount) => {
+    if (amount <= 0) return true
+    if (get().getCashAmount() < amount) return false
+
+    set((state) => ({
+      inventorySlots: state.inventorySlots.map((slot) => {
+        if (slot.item?.id !== 'cash') return slot
+
+        const quantity = slot.item.quantity - amount
+        return quantity <= 0
+          ? { ...slot, item: null }
+          : { ...slot, item: { ...slot.item, quantity } }
+      }),
+    }))
+
+    return true
+  },
+
+  editorMode: false,
+  toggleEditorMode: () => set((state) => ({ editorMode: !state.editorMode })),
   placedObjects: [],
-  selectedPlacedId: null,
-  ghostPosition: null,
-  ghostRotation: 0,
-  ghostScale: 1,
-  playerPos: [0, 0, 0],
-  flyMode: false,
-  chatOpen: false,
-  chatMessages: [{
-    id: 'w1',
-    sender: 'System',
-    text: '💎 EtherWorld RP — Builder Mode. Cliquez B pour construire.',
-    timestamp: Date.now(),
-    type: 'system'
-  }],
-  adminOpen: false,
-  timeOfDay: 22,
-  weather: 'clear',
-  animatingDoors: {},
-  currentView: 'building',
-  corridorApartments: [],
-  lights: {},
+  addPlacedObject: (obj) =>
+    set((state) => ({ placedObjects: [...state.placedObjects, obj] })),
+  removePlacedObject: (id) =>
+    set((state) => ({
+      placedObjects: state.placedObjects.filter((obj) => obj.id !== id),
+    })),
+  updatePlacedObject: (id, updates) =>
+    set((state) => ({
+      placedObjects: state.placedObjects.map((obj) =>
+        obj.id === id ? { ...obj, ...updates } : obj
+      ),
+    })),
+  selectedObject: null,
+  setSelectedObject: (id) => set({ selectedObject: id }),
 
-  set: (p) => set(p),
-  
-  addPlacedObject: (obj) => set((s) => ({
-    placedObjects: [...s.placedObjects, { ...obj, id: uid() }]
-  })),
-  
-  removePlacedObject: (id) => set((s) => ({
-    placedObjects: s.placedObjects.filter((o) => o.id !== id),
-    selectedPlacedId: s.selectedPlacedId === id ? null : s.selectedPlacedId
-  })),
-  
-  updatePlacedObject: (id, updates) => set((s) => ({
-    placedObjects: s.placedObjects.map((o) => (o.id === id ? { ...o, ...updates } : o))
-  })),
-  
-  toggleDoor: (id) => set((s) => ({
-    placedObjects: s.placedObjects.map((o) =>
-      o.id === id ? { ...o, doorOpen: !o.doorOpen } : o
-    )
-  })),
-  
-  selectPlacedObject: (id) => set({ selectedPlacedId: id }),
-  setGhostPosition: (pos) => set({ ghostPosition: pos }),
-  setGhostRotation: (rot) => set({ ghostRotation: rot }),
-  rotateGhost: () => set((s) => ({ ghostRotation: s.ghostRotation + Math.PI / 4 })),
-  
-  addChatMessage: (sender, text, type = 'chat') => set((s) => ({
-    chatMessages: [...s.chatMessages.slice(-200), {
-      id: uid(),
-      sender,
-      text,
-      timestamp: Date.now(),
-      type
-    }]
-  })),
-  
-  toggleBuildMode: () => {
-    const s = get();
+  dragPreview: {
+    active: false,
+    objectType: null,
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+    isValid: true,
+  },
+  setDragPreview: (preview) =>
+    set((state) => ({ dragPreview: { ...state.dragPreview, ...preview } })),
+  clearDragPreview: () =>
     set({
-      buildMode: !s.buildMode,
-      selectedModelType: null,
-      ghostPosition: null,
-      selectedPlacedId: null
-    });
-  },
-  
-  setSelectedModelType: (type, category) => set({
-    selectedModelType: type,
-    selectedCategory: category || null
-  }),
-  
-  setSessionActive: (active) => set({ sessionActive: active }),
-  
-  toggleGodMode: () => {
-    const n = !get().isGodMode;
-    set({ isGodMode: n });
-    get().addChatMessage('Admin', n ? '🛡️ God Mode ON' : '🛡️ God Mode OFF', 'system');
-  },
-  
-  toggleFlyMode: () => {
-    const n = !get().flyMode;
-    set({ flyMode: n });
-    get().addChatMessage('Admin', n ? '🪰 Fly Mode ON' : '🪰 Fly Mode OFF', 'system');
-  },
-  
-  setPlayerPos: (pos) => set({ playerPos: pos }),
-  setTimeOfDay: (h) => set({ timeOfDay: h }),
-  setWeather: (w) => set({ weather: w }),
-  setAnimatingDoor: (id, progress) => set((s) => ({
-    animatingDoors: { ...s.animatingDoors, [id]: progress }
-  })),
-  
-  setCurrentView: (view) => set({ currentView: view }),
-}));
+      dragPreview: {
+        active: false,
+        objectType: null,
+        position: [0, 0, 0],
+        rotation: [0, 0, 0],
+        isValid: true,
+      },
+    }),
 
-// Helper functions for external use
-export const setGlobal = (p: Partial<GameState>) => useGameState.getState().set(p);
-export const addPlaced = (o: Omit<PlacedObject, 'id'>) => useGameState.getState().addPlacedObject(o);
-export const removePlaced = (id: string) => useGameState.getState().removePlacedObject(id);
-export const updatePlaced = (id: string, u: Partial<PlacedObject>) => useGameState.getState().updatePlacedObject(id, u);
-export const toggleDoor = (id: string) => useGameState.getState().toggleDoor(id);
-export const selectPlaced = (id: string | null) => useGameState.getState().selectPlacedObject(id);
-export const toggleBuild = () => useGameState.getState().toggleBuildMode();
-export const toggleGod = () => useGameState.getState().toggleGodMode();
-export const toggleFly = () => useGameState.getState().toggleFlyMode();
-export const setChatOpen = (o: boolean) => useGameState.getState().set({ chatOpen: o });
-export const setAdminOpen = (o: boolean) => useGameState.getState().set({ adminOpen: o });
-export const selectModel = (t: string | null, c?: ObjectCategory) => useGameState.getState().setSelectedModelType(t, c);
-export const rotateGhost = () => useGameState.getState().rotateGhost();
-export const addChat = (s: string, t: string, ty?: ChatMessage['type']) => useGameState.getState().addChatMessage(s, t, ty);
+  contextMenu: null,
+  showContextMenu: (menu) => set({ contextMenu: menu }),
+  hideContextMenu: () => set({ contextMenu: null }),
 
-// Compatibility aliases for the newer EtherWorld room/corridor imports.
-export const useEtherWorldStore: any = useGameState as any;
-export const useStore: any = useGameState as any;
+  playerAction: 'standing',
+  setPlayerAction: (action) => set({ playerAction: action }),
+
+  computerState: {
+    isOn: false,
+    currentApp: null,
+    bootProgress: 0,
+  },
+  setComputerState: (state) =>
+    set((current) => ({
+      computerState: { ...current.computerState, ...state },
+    })),
+  toggleComputer: () => {
+    const computer = get().computerState
+
+    if (computer.isOn) {
+      set({ computerState: { isOn: false, currentApp: null, bootProgress: 0 } })
+      return
+    }
+
+    set({ computerState: { isOn: true, currentApp: null, bootProgress: 100 } })
+    set((state) => ({
+      computerState: { ...state.computerState, currentApp: 'desktop' },
+    }))
+  },
+
+  shopOpen: false,
+  setShopOpen: (open) => set({ shopOpen: open }),
+  shopCart: [],
+  addToCart: (item) => set((state) => ({ shopCart: [...state.shopCart, item] })),
+  removeFromCart: (itemId) =>
+    set((state) => ({
+      shopCart: state.shopCart.filter((item) => item.id !== itemId),
+    })),
+  clearCart: () => set({ shopCart: [] }),
+  purchaseCart: () => {
+    const state = get()
+
+    const total = state.shopCart.reduce((sum, item) => {
+      const discount = item.discount ?? 0
+      return sum + Math.floor(item.value * (1 - discount / 100))
+    }, 0)
+
+    if (!state.spendCash(total)) {
+      state.setNotification('Fonds insuffisants!')
+      return false
+    }
+
+    for (const shopItem of state.shopCart) {
+      state.addItem({
+        id: `${shopItem.id}_${crypto.randomUUID()}`,
+        name: shopItem.name,
+        description: shopItem.description,
+        icon: shopItem.icon,
+        category: shopItem.category,
+        rarity: shopItem.rarity,
+        stackable: shopItem.stackable,
+        maxStack: shopItem.maxStack,
+        quantity: shopItem.quantity,
+        weight: shopItem.weight,
+        value: shopItem.value,
+        usable: shopItem.usable,
+        tradeable: shopItem.tradeable,
+      })
+    }
+
+    state.clearCart()
+    state.setNotification('Achat effectué!')
+    return true
+  },
+
+  showerActive: false,
+  setShowerActive: (active) => set({ showerActive: active }),
+
+  windowsOpen: { window1: false, window2: false },
+  toggleWindow: (id) =>
+    set((state) => ({
+      windowsOpen: {
+        ...state.windowsOpen,
+        [id]: !(state.windowsOpen[id] ?? false),
+      },
+    })),
+}))
