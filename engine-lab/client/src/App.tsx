@@ -1,4 +1,5 @@
 import { DeveloperConsole } from './console/DeveloperConsole'
+import { EngineLabToolsOverlay } from "./tools/EngineLabToolsOverlay";
 import { Canvas } from "@react-three/fiber";
 import { Physics } from "@react-three/rapier";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -295,8 +296,12 @@ export function App() {
         onDuplicateSelected={duplicateSelectedPlatform}
         onUpdateSelected={updateSelectedPlatform}
       />
+      <EngineLabToolsOverlay />
+
     </div>
   );
 }
+
+
 
 
