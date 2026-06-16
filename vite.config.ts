@@ -4,8 +4,8 @@ import tailwindcss from '@tailwindcss/vite'
 import { resolve } from 'path'
 
 export default defineConfig({
-  // ✅ Base pour GitHub Pages
-  base: '/etherzRP/',
+  // ✅ Base URL — '/' pour dev/Vercel, '/etherzRP/' pour GitHub Pages
+  base: '/',
 
   plugins: [
     react(),
