@@ -1,8 +1,33 @@
-require('dotenv').config()
+try {
+  require('dotenv').config()
+} catch (error) {
+  console.warn('[Server] dotenv not available, continuing with process env only.')
+}
 
 const express = require('express')
-const cors = require('cors')
 const http = require('http')
+
+function createCorsMiddleware(options = {}) {
+  try {
+    const cors = require('cors')
+    return cors(options)
+  } catch (error) {
+    const allowedOrigin = options.origin || '*'
+    return (req, res, next) => {
+      res.setHeader('Access-Control-Allow-Origin', allowedOrigin)
+      res.setHeader('Access-Control-Allow-Credentials', 'true')
+      res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization')
+      res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS')
+
+      if (req.method === 'OPTIONS') {
+        res.status(204).end()
+        return
+      }
+
+      next()
+    }
+  }
+}
 
 const {
   initFirebaseAdmin,
@@ -26,7 +51,7 @@ const app = express()
 const server = http.createServer(app)
 const troxtAgent = createTroxtAgent()
 
-app.use(cors({
+app.use(createCorsMiddleware({
   origin: CLIENT_ORIGIN,
   credentials: true,
 }))

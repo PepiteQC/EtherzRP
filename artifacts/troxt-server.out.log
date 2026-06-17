@@ -1,0 +1,5 @@
+
+> etherzrp@0.1.0 dev:server
+> node --watch src/server/index.cjs
+
+Failed running 'src/server/index.cjs'. Waiting for file changes before restarting...
