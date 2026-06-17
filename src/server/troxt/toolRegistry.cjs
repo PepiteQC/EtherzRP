@@ -41,6 +41,14 @@ const DEFAULT_TOOLS = [
     localOnly: true,
   },
   {
+    id: 'troxt-prisma',
+    name: 'TroxTPrisma',
+    description: 'External local scene styling and composition adapter.',
+    intents: ['troxt_prisma.command', 'scene.refine', 'palette.compose'],
+    capabilities: ['compose_palette', 'refine_scene', 'suggest_material_pass'],
+    localOnly: true,
+  },
+  {
     id: 'troxt-diagnostics',
     name: 'TROXT Diagnostics',
     description: 'Built-in local diagnostics tool for smoke tests and health checks.',

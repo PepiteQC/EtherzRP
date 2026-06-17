@@ -19,7 +19,7 @@ class HealthMonitor {
 
   snapshot() {
     const tools = this.toolRegistry?.list() || []
-    const requiredTargets = ['builder', 'visual-forge', 'code-lab', 'ethervision']
+    const requiredTargets = ['builder', 'visual-forge', 'code-lab', 'ethervision', 'troxt-prisma']
     const offlineTargets = requiredTargets.filter((toolId) => {
       const tool = tools.find((candidate) => candidate.id === toolId)
       return !tool?.connected

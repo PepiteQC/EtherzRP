@@ -6,19 +6,13 @@ import {
   Bot,
   Boxes,
   BrainCircuit,
-  CheckCircle2,
   Cpu,
   Grid2x2,
   Move3D,
   Orbit,
-  RotateCw,
-  ScanSearch,
-  Server,
   Sparkles,
   SquareDashedMousePointer,
-  Trash2,
   TreePine,
-  Wrench,
 } from 'lucide-react'
 import { LabScene, SCENE_TEMPLATES, type LabObject, type LabToolId } from './LabScene'
 import {
@@ -292,6 +286,12 @@ export default function LabTestApp() {
           intents: ['ethervision.command', 'vision.analyze'],
           capabilities: ['detect_subject', 'scene_analysis'],
         },
+        {
+          toolId: 'troxt-prisma',
+          name: 'TroxTPrisma',
+          intents: ['troxt_prisma.command', 'scene.refine', 'palette.compose'],
+          capabilities: ['compose_palette', 'refine_scene', 'suggest_material_pass'],
+        },
       ]
 
       tools.forEach((tool) => {
@@ -397,6 +397,33 @@ export default function LabTestApp() {
             summary: 'Local scene scan completed.',
             counts,
             selectedObjectId: selectedIdRef.current,
+          },
+        })
+        return
+      }
+
+      if (targetId === 'troxt-prisma') {
+        const palette = Array.from(new Set(objectsRef.current.map((object) => object.color))).slice(0, 6)
+        const composition = {
+          totalObjects: objectsRef.current.length,
+          verticalAnchors: objectsRef.current.filter((object) => ['column', 'tree', 'light'].includes(object.type)).length,
+          structuralMass: objectsRef.current.filter((object) => ['wall', 'floor', 'platform', 'door'].includes(object.type)).length,
+        }
+
+        socket.emit('troxt:result', {
+          jobId: command.jobId,
+          ok: true,
+          status: 'succeeded',
+          result: {
+            tool: 'troxt-prisma',
+            summary: 'Local lookdev and composition pass completed.',
+            palette,
+            composition,
+            recommendations: [
+              'Accentuer le contraste entre surfaces structurelles et props lumineux.',
+              'Regrouper les couleurs chaudes autour des points d acces.',
+              'Garder les elements verticaux comme repere de lecture de scene.',
+            ],
           },
         })
       }
@@ -576,7 +603,7 @@ export default function LabTestApp() {
               </div>
               <div className="lab-chip">
                 <strong>Connected targets</strong>
-                <span>{connectedTools.length} / 4</span>
+                <span>{connectedTools.length} / 5</span>
               </div>
             </div>
 
@@ -780,6 +807,20 @@ export default function LabTestApp() {
                 <strong>EtherVision</strong>
                 <span>Object scan summary</span>
               </button>
+              <button
+                className="lab-action"
+                type="button"
+                onClick={() => runQuickCommand({
+                  source: 'lab-test-ui',
+                  toolId: 'troxt-prisma',
+                  intent: 'troxt_prisma.command',
+                  command: 'troxtprisma refine scene palette and composition',
+                  payload: { action: 'refine_scene', focus: 'palette_and_composition' },
+                })}
+              >
+                <strong>TroxTPrisma</strong>
+                <span>Palette and lookdev pass</span>
+              </button>
             </div>
 
             <div className="lab-grid two" style={{ marginTop: 10 }}>
@@ -790,6 +831,7 @@ export default function LabTestApp() {
                   <option value="visual-forge">visual-forge</option>
                   <option value="code-lab">code-lab</option>
                   <option value="ethervision">ethervision</option>
+                  <option value="troxt-prisma">troxt-prisma</option>
                 </select>
               </label>
               <label>
@@ -855,6 +897,9 @@ export default function LabTestApp() {
                   <div className="lab-mini">{tool.capabilities.join(', ') || 'No capabilities yet.'}</div>
                 </div>
               ))}
+            </div>
+            <div className="lab-note">
+              TroxTPrisma sert ici de passe lookdev locale pour palettes, materiaux et composition de scene, toujours orchestree par TROXT.
             </div>
           </section>
 

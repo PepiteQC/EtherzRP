@@ -4,10 +4,22 @@ function nowISO() {
   return new Date().toISOString()
 }
 
+function resolveSocketOrigins(originOption) {
+  if (Array.isArray(originOption)) {
+    return originOption
+  }
+
+  return String(originOption || 'http://localhost:5173,http://127.0.0.1:5173')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+}
+
 function registerSocketServer(server, options = {}) {
+  const allowedOrigins = resolveSocketOrigins(options.origin)
   const io = new Server(server, {
     cors: {
-      origin: options.origin || 'http://localhost:5173',
+      origin: allowedOrigins,
       credentials: true,
     },
   })

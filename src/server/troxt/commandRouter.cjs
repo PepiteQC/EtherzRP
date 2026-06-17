@@ -20,6 +20,12 @@ const ROUTE_RULES = [
     keywords: ['vision', 'recognize', 'recognition', 'detect', 'scan', 'classify', 'analyse image', 'analyze image'],
   },
   {
+    intent: 'troxt_prisma.command',
+    targetId: 'troxt-prisma-agent',
+    targetKind: 'agent',
+    keywords: ['prisma', 'prism', 'palette', 'material pass', 'refine scene', 'scene refine', 'lookdev', 'styling'],
+  },
+  {
     intent: 'visual_forge.command',
     targetId: 'visual-forge-agent',
     targetKind: 'agent',

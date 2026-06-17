@@ -28,6 +28,14 @@ TROXT owns:
 - HTTP API
 - Socket.IO bridge
 
+Specialized local targets currently modeled in TROXT:
+
+- Builder
+- Visual Forge
+- Code Lab
+- EtherVision
+- TroxTPrisma
+
 ## HTTP API
 
 Base path: `/api/troxt`

@@ -33,6 +33,14 @@ const DEFAULT_AGENTS = [
     intents: ['ethervision.command', 'vision.analyze', 'subject.detect'],
     localOnly: true,
   },
+  {
+    id: 'troxt-prisma-agent',
+    name: 'TroxTPrisma Agent',
+    description: 'Routes scene styling, palette, and composition refinement requests to TroxTPrisma.',
+    toolId: 'troxt-prisma',
+    intents: ['troxt_prisma.command', 'scene.refine', 'palette.compose'],
+    localOnly: true,
+  },
 ]
 
 class AgentRegistry {

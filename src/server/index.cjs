@@ -12,9 +12,20 @@ function createCorsMiddleware(options = {}) {
     const cors = require('cors')
     return cors(options)
   } catch (error) {
-    const allowedOrigin = options.origin || '*'
+    const allowedOrigins = Array.isArray(options.origin)
+      ? options.origin
+      : String(options.origin || '*')
+          .split(',')
+          .map((origin) => origin.trim())
+          .filter(Boolean)
+
     return (req, res, next) => {
-      res.setHeader('Access-Control-Allow-Origin', allowedOrigin)
+      const requestOrigin = req.headers.origin
+      const matchedOrigin = requestOrigin && allowedOrigins.includes(requestOrigin)
+        ? requestOrigin
+        : allowedOrigins[0] || '*'
+
+      res.setHeader('Access-Control-Allow-Origin', matchedOrigin)
       res.setHeader('Access-Control-Allow-Credentials', 'true')
       res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization')
       res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS')
@@ -27,6 +38,13 @@ function createCorsMiddleware(options = {}) {
       next()
     }
   }
+}
+
+function resolveAllowedOrigins(input) {
+  return String(input || 'http://localhost:5173,http://127.0.0.1:5173')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean)
 }
 
 const {
@@ -43,7 +61,7 @@ const { registerSocketServer } = require('./socket/socketServer.cjs')
 const { createTroxtAgent } = require('./troxt/index.cjs')
 
 const PORT = Number(process.env.PORT || 4000)
-const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173'
+const CLIENT_ORIGINS = resolveAllowedOrigins(process.env.CLIENT_ORIGIN)
 
 initFirebaseAdmin()
 
@@ -52,7 +70,7 @@ const server = http.createServer(app)
 const troxtAgent = createTroxtAgent()
 
 app.use(createCorsMiddleware({
-  origin: CLIENT_ORIGIN,
+  origin: CLIENT_ORIGINS,
   credentials: true,
 }))
 
@@ -86,7 +104,7 @@ app.use((req, res) => {
 })
 
 const socketRuntime = registerSocketServer(server, {
-  origin: CLIENT_ORIGIN,
+  origin: CLIENT_ORIGINS,
 })
 
 troxtAgent.attachSocket(socketRuntime.io)

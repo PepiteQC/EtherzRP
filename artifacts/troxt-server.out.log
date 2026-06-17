@@ -3,3 +3,44 @@
 > node --watch src/server/index.cjs
 
 Failed running 'src/server/index.cjs'. Waiting for file changes before restarting...
+Restarting 'src/server/index.cjs'
+
+======================================
+ EtherWorld RP server online
+ URL: http://localhost:4000
+ Health: http://localhost:4000/health
+ Firebase Admin: READY
+======================================
+
+[Socket] connected: jjhRTLa97v_mP-NVAAAB
+[Socket] disconnected: jjhRTLa97v_mP-NVAAAB
+[Socket] connected: nYmz4q4-dWyasP4sAAAE
+Restarting 'src/server/index.cjs'
+
+======================================
+ EtherWorld RP server online
+ URL: http://localhost:4000
+ Health: http://localhost:4000/health
+ Firebase Admin: READY
+======================================
+
+[Socket] connected: Yxtu1vGBa-slvkKDAAAB
+Restarting 'src/server/index.cjs'
+
+==========================Failed running 'src/server/index.cjs'. Waiting for file changes before restarting...
+Restarting 'src/server/index.cjs'
+Failed running 'src/server/index.cjs'. Waiting for file changes before restarting...
+tLPAAAB
+Restarting 'src/server/index.cjs'
+
+======================================
+ EtherWorld RP server online
+ URL: http://localhost:4000
+ Health: http://localhost:4000/health
+ Firebase Admin: READY
+======================================
+
+[Socket] connected: Cnl95-FjLXaoKr-tAAAB
+[Socket] disconnected: Cnl95-FjLXaoKr-tAAAB
+[Socket] connected: 9L9V1FRgyKBLtDKAAAAF
+[Socket] disconnected: 9L9V1FRgyKBLtDKAAAAF
