@@ -15,6 +15,7 @@ const worldRoutes = require('./routes/world.routes.cjs')
 const accessRoutes = require('./routes/access.routes.cjs')
 const doorsRoutes = require('./routes/doors.routes.cjs')
 const { registerSocketServer } = require('./socket/socketServer.cjs')
+const { createTroxtAgent } = require('./troxt/index.cjs')
 
 const PORT = Number(process.env.PORT || 4000)
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173'
@@ -23,6 +24,7 @@ initFirebaseAdmin()
 
 const app = express()
 const server = http.createServer(app)
+const troxtAgent = createTroxtAgent()
 
 app.use(cors({
   origin: CLIENT_ORIGIN,
@@ -38,6 +40,7 @@ app.get('/health', (req, res) => {
     port: PORT,
     firebaseAdmin: isFirebaseReady(),
     firebaseError: getFirebaseError(),
+    troxt: troxtAgent.health(),
     live: true,
     time: new Date().toISOString(),
   })
@@ -47,6 +50,7 @@ app.use('/api/player', playerRoutes)
 app.use('/api/world', worldRoutes)
 app.use('/api/access', accessRoutes)
 app.use('/api/doors', doorsRoutes)
+app.use('/api/troxt', troxtAgent.httpRouter)
 
 app.use((req, res) => {
   res.status(404).json({
@@ -56,9 +60,11 @@ app.use((req, res) => {
   })
 })
 
-registerSocketServer(server, {
+const socketRuntime = registerSocketServer(server, {
   origin: CLIENT_ORIGIN,
 })
+
+troxtAgent.attachSocket(socketRuntime.io)
 
 server.listen(PORT, () => {
   console.log('')

@@ -1,8 +1,0 @@
-{
-  "id": "etherworld_local_lab",
-  "name": "EtherWorld Local Engine Lab",
-  "version": 1,
-  "mode": "local",
-  "gravity": [0, -24, 0],
-  "spawn": [0, 3, 8]
-}
